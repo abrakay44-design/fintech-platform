@@ -38,3 +38,6 @@ docker-compose.override.yml
 # Lock files (choose one; comment out if you want them committed)
 # Cargo.lock
 # pnpm-lock.yaml
+
+# Go binaries
+go-gateway/server
