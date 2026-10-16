@@ -1,0 +1,40 @@
+# Rust
+target/
+**/*.rs.bk
+
+# Go
+go-gateway/bin/
+*.test
+*.out
+
+# Node
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+
+# Lock files (choose one; comment out if you want them committed)
+# Cargo.lock
+# pnpm-lock.yaml
