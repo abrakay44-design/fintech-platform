@@ -999,6 +999,8 @@ dependencies = [
  "async-trait",
  "chrono",
  "common",
+ "hex",
+ "k256",
  "rust_decimal",
  "serde",
  "serde_json",
@@ -1006,6 +1008,7 @@ dependencies = [
  "tokio",
  "tracing",
  "uuid",
+ "wallet-service",
 ]
 
 [[package]]

@@ -20,9 +20,10 @@ pub struct SignedTx {
     pub tx_hash: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TxStatus {
     Pending,
     Confirmed { block: u64, confirmations: u32 },
     Failed { reason: String },
 }
+
