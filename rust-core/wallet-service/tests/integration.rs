@@ -1,6 +1,6 @@
 use common::Chain;
 use uuid::Uuid;
-use wallet_service::{mock::MockWalletService, WalletService};
+use wallet_service::{mock::MockWalletService, SigningBackend};
 
 #[tokio::test]
 async fn derive_is_deterministic() {

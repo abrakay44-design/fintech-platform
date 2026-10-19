@@ -1,0 +1,29 @@
+[package]
+name = "orchestrator"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+
+[dependencies]
+common = { path = "../common" }
+transaction-engine = { path = "../transaction-engine" }
+policy-engine = { path = "../policy-engine" }
+wallet-service = { path = "../wallet-service" }
+ledger = { path = "../ledger" }
+
+async-trait.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+rust_decimal.workspace = true
+
+[dev-dependencies]
+tokio = { version = "1.40", features = ["full", "test-util"] }
+sha3 = "0.10"
+rand = "0.8"
+k256 = { version = "0.13", features = ["ecdsa"] }

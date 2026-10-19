@@ -18,11 +18,22 @@ use chrono::{DateTime, Utc};
 /// Public information about a registered address.
 #[derive(Debug, Clone)]
 pub struct AddressInfo {
+    /// The blockchain address (hex for EVM, base58 for Solana).
     pub address: Address,
+
+    /// The secp256k1 public key associated with the address.
     pub public_key: PublicKey,
+
+    /// EVM chain ID (1 for Ethereum, 137 for Polygon, 42161 for Arbitrum).
     pub chain_id: u64,
+
+    /// Opaque handle for future lookups.
     pub handle: PublicKeyHandle,
+
+    /// How this address was obtained (external wallet, HD, MPC).
     pub origin: KeyOrigin,
+
+    /// When the address was registered.
     pub registered_at: DateTime<Utc>,
 }
 

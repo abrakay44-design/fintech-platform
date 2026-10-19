@@ -6,7 +6,7 @@
 
 use crate::error::{WalletError, WalletResult};
 use crate::types::{KeyHandle, PublicKeyInfo, SignedTransaction};
-use crate::WalletService;
+use crate::SigningBackend;
 
 use async_trait::async_trait;
 use common::Chain;
@@ -46,7 +46,7 @@ impl Default for MockWalletService {
 }
 
 #[async_trait]
-impl WalletService for MockWalletService {
+impl SigningBackend for MockWalletService {
     async fn derive_address(
         &self,
         user_id: Uuid,

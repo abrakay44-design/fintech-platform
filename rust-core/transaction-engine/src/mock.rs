@@ -108,11 +108,15 @@ impl TransactionEngine for MockTransactionEngine {
             return Err(TxError::QuoteExpired(quote.expires_at));
         }
 
-        // In the mock, the unsigned payload is just the quote_id + chain_id.
+        // Deterministic for a given intent: chain_id + intent_id + amount.
+        // Using intent_id (not quote_id) makes the payload stable across
+        // re-quotes, so the same signature verifies for any subsequent build.
         let chain_id = extract_chain(quote.intent.from.chain);
-        let mut out = Vec::with_capacity(8 + 16);
+        let amount_str = quote.intent.amount.value.to_string();
+        let mut out = Vec::with_capacity(8 + 16 + amount_str.len());
         out.extend_from_slice(&chain_id.to_be_bytes());
-        out.extend_from_slice(quote.quote_id.as_bytes());
+        out.extend_from_slice(quote.intent.intent_id.as_bytes());
+        out.extend_from_slice(amount_str.as_bytes());
 
         Ok(out)
     }

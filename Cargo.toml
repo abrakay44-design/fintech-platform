@@ -6,6 +6,7 @@ members = [
     "rust-core/transaction-engine",
     "rust-core/policy-engine",
     "rust-core/ledger",
+    "rust-core/orchestrator",
 ]
 
 [workspace.package]

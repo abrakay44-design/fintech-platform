@@ -63,16 +63,23 @@ async fn quote_rejects_same_asset() {
 }
 
 #[tokio::test]
-async fn build_produces_chain_and_quote_id() {
+async fn build_produces_deterministic_payload() {
     let engine = MockTransactionEngine::new();
     let intent = make_intent(eth(), usdc(), Decimal::new(1, 0));
+    let intent_id = intent.intent_id;
     let quote = engine.quote(intent).await.unwrap();
 
     let unsigned = engine.build(&quote).await.unwrap();
 
+    // Layout: chain_id (8) | intent_id (16) | amount_str (variable)
     assert_eq!(&unsigned[..8], &[0u8, 0, 0, 0, 0, 0, 0, 1]);
-    assert_eq!(&unsigned[8..24], quote.quote_id.as_bytes());
-    assert_eq!(unsigned.len(), 24);
+    assert_eq!(&unsigned[8..24], intent_id.as_bytes());
+    // Amount "1" is 1 byte, so total is 8 + 16 + 1 = 25
+    assert_eq!(unsigned.len(), 25);
+
+    // Rebuilding the same quote must produce identical bytes.
+    let unsigned2 = engine.build(&quote).await.unwrap();
+    assert_eq!(unsigned, unsigned2);
 }
 
 #[tokio::test]
