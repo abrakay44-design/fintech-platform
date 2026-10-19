@@ -1,55 +1,49 @@
-//! Error types specific to wallet operations.
+//! Wallet-specific error types.
+//!
+//! These are deliberately distinct from `common::CoreError` so the wallet
+//! service can express failure modes that only make sense for key management.
 
-use common::CoreError;
+use thiserror::Error;
 
 /// Errors that can occur during wallet operations.
-#[derive(Debug, thiserror::Error)]
+///
+/// Every variant is designed to be safe to log — no secret material is ever
+/// included in the `Display` output.
+#[derive(Debug, Error)]
 pub enum WalletError {
-    #[error("key not found for handle {0}")]
-    KeyNotFound(String),
+    /// The provided key handle does not correspond to any stored key.
+    #[error("unknown key handle")]
+    UnknownKeyHandle,
 
-    #[error("invalid address: {0}")]
-    InvalidAddress(String),
+    /// The user is not authorized to use this key handle.
+    #[error("unauthorized key access")]
+    Unauthorized,
 
-    #[error("signature verification failed")]
-    SignatureVerificationFailed,
+    /// The signing operation failed (cryptographic error).
+    /// Message is always a generic reason — never includes key material.
+    #[error("signing failed: {0}")]
+    SigningFailed(String),
 
-    #[error("user rejected the signing request")]
-    UserRejected,
+    /// The provided payload is not valid for the requested chain.
+    #[error("invalid payload for chain: {0}")]
+    InvalidPayload(String),
 
-    #[error("address mismatch: expected {expected}, got {actual}")]
-    AddressMismatch { expected: String, actual: String },
+    /// Key derivation index is out of range.
+    #[error("derivation index {0} out of range")]
+    DerivationIndexOutOfRange(u32),
 
-    #[error("signing operation timed out")]
-    Timeout,
-
+    /// The requested chain is not supported by this wallet backend.
     #[error("unsupported chain: {0}")]
     UnsupportedChain(String),
 
-    #[error("derivation index overflow")]
-    DerivationOverflow,
+    /// Backend is temporarily unavailable (network, HSM, MPC coordinator).
+    #[error("backend unavailable: {0}")]
+    BackendUnavailable(String),
 
-    #[error("cryptographic error: {0}")]
-    Crypto(String),
-
-    #[error("storage error: {0}")]
-    Storage(String),
+    /// Any internal invariant violation. Should never be user-visible.
+    #[error("internal wallet error")]
+    Internal,
 }
 
-impl From<WalletError> for CoreError {
-    fn from(err: WalletError) -> Self {
-        match err {
-            WalletError::UserRejected => CoreError::SigningFailure("user rejected".into()),
-            WalletError::SignatureVerificationFailed => {
-                CoreError::SigningFailure("verification failed".into())
-            }
-            WalletError::Timeout => CoreError::Network("timeout".into()),
-            WalletError::KeyNotFound(_) => CoreError::InvalidInput("key not found".into()),
-            WalletError::InvalidAddress(msg) => CoreError::InvalidInput(msg),
-            WalletError::AddressMismatch { .. } => CoreError::InvalidInput("address mismatch".into()),
-            WalletError::UnsupportedChain(chain) => CoreError::InvalidInput(chain),
-            WalletError::DerivationOverflow => CoreError::InvalidInput("derivation overflow".into()),
-            WalletError::Crypto(_) | WalletError::Storage(_) => CoreError::Internal("crypto/storage".into()),
-        }
-    }
-}
+/// Convenience alias for wallet operations.
+pub type WalletResult<T> = Result<T, WalletError>;
