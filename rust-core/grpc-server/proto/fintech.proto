@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package fintech.v1;
 
+option go_package = "github.com/sirabra/fintech-gateway/internal/pb;pb";
+
 // ============================================================================
 // SwapService — the complete gRPC surface exposed by the Rust core.
 // ============================================================================
