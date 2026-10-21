@@ -1,0 +1,205 @@
+syntax = "proto3";
+
+package fintech.v1;
+
+// ============================================================================
+// SwapService — the complete gRPC surface exposed by the Rust core.
+// ============================================================================
+
+service SwapService {
+    // --- Swap ---
+    rpc Quote (QuoteRequest) returns (QuoteResponse);
+    rpc ExecuteSwap (ExecuteSwapRequest) returns (ExecuteSwapResponse);
+    rpc GetSwapStatus (StatusRequest) returns (StatusResponse);
+
+    // --- Wallet ---
+    rpc RegisterWallet (RegisterWalletRequest) returns (RegisterWalletResponse);
+    rpc GetWallet (GetWalletRequest) returns (GetWalletResponse);
+    rpc ListWallets (ListWalletsRequest) returns (ListWalletsResponse);
+    rpc VerifySignature (VerifySignatureRequest) returns (VerifySignatureResponse);
+
+    // --- Portfolio ---
+    rpc GetPortfolio (PortfolioRequest) returns (PortfolioResponse);
+    rpc ListTransactions (TransactionsRequest) returns (TransactionsResponse);
+
+    // --- Policy ---
+    rpc GetLimits (LimitsRequest) returns (LimitsResponse);
+    rpc DailyTotal (DailyTotalRequest) returns (DailyTotalResponse);
+}
+
+// ============================================================================
+// Common messages
+// ============================================================================
+
+message AssetId {
+    string chain = 1;         // "ethereum", "polygon", "arbitrum", "solana"
+    string contract = 2;      // optional contract address
+    string symbol = 3;        // "ETH", "USDC"
+    uint32 decimals = 4;      // 18 for ETH, 6 for USDC
+    string asset_class = 5;   // "native_token", "erc20", "spl", ...
+}
+
+// ============================================================================
+// Swap
+// ============================================================================
+
+message QuoteRequest {
+    string user_id = 1;
+    string from_asset = 2;   // symbol
+    string to_asset = 3;     // symbol
+    string amount = 4;       // decimal string
+    uint32 slippage_bps = 5;
+}
+
+message QuoteResponse {
+    string quote_id = 1;
+    string expected_out = 2;
+    string minimum_out = 3;
+    string estimated_fee = 4;
+    string expires_at = 5;   // RFC3339
+    string route_summary = 6;
+}
+
+message ExecuteSwapRequest {
+    string user_id = 1;
+    string quote_id = 2;
+    string from_account = 3;      // UUID
+    string to_account = 4;        // UUID
+    string wallet_handle = 5;     // UUID
+    bytes signature = 6;          // 65-byte EVM signature
+}
+
+message ExecuteSwapResponse {
+    string tx_hash = 1;
+    string chain = 2;
+    string ledger_post_id = 3;
+    string settled_at = 4;        // RFC3339
+}
+
+message StatusRequest {
+    string chain = 1;
+    string tx_hash = 2;
+}
+
+message StatusResponse {
+    string tx_hash = 1;
+    string status = 2;            // "pending", "confirmed", "failed"
+    uint64 block = 3;
+    uint32 confirmations = 4;
+    string error = 5;
+}
+
+// ============================================================================
+// Wallet
+// ============================================================================
+
+message RegisterWalletRequest {
+    string user_id = 1;
+    uint64 chain_id = 2;
+    string address = 3;
+    bytes challenge = 4;
+    bytes signature = 5;
+}
+
+message RegisterWalletResponse {
+    string handle = 1;
+    string address = 2;
+    string public_key = 3;        // hex
+    uint64 chain_id = 4;
+    string registered_at = 5;     // RFC3339
+}
+
+message GetWalletRequest {
+    string handle = 1;
+}
+
+message GetWalletResponse {
+    string handle = 1;
+    string address = 2;
+    string public_key = 3;
+    uint64 chain_id = 4;
+    string origin = 5;            // "external_wallet", "managed_hd", "mpc"
+    string registered_at = 6;
+}
+
+message ListWalletsRequest {
+    string user_id = 1;
+}
+
+message ListWalletsResponse {
+    repeated GetWalletResponse wallets = 1;
+}
+
+message VerifySignatureRequest {
+    string address = 1;
+    bytes payload = 2;
+    bytes signature = 3;
+}
+
+message VerifySignatureResponse {
+    bool valid = 1;
+    string recovered = 2;
+}
+
+// ============================================================================
+// Portfolio
+// ============================================================================
+
+message PortfolioRequest {
+    string user_id = 1;
+    string account_id = 2;        // UUID
+}
+
+message PortfolioResponse {
+    string total_value_usd = 1;
+    repeated Position positions = 2;
+}
+
+message Position {
+    AssetId asset = 1;
+    string amount = 2;
+    string value_usd = 3;
+    string change_24h_pct = 4;
+}
+
+message TransactionsRequest {
+    string user_id = 1;
+    uint32 limit = 2;
+}
+
+message TransactionsResponse {
+    repeated TxSummary transactions = 1;
+}
+
+message TxSummary {
+    string tx_id = 1;
+    string tx_hash = 2;
+    string chain = 3;
+    string from_symbol = 4;
+    string to_symbol = 5;
+    string amount = 6;
+    string status = 7;
+    string created_at = 8;
+}
+
+// ============================================================================
+// Policy
+// ============================================================================
+
+message LimitsRequest {
+    string user_id = 1;
+}
+
+message LimitsResponse {
+    string per_tx_usd = 1;
+    string daily_withdrawal_usd = 2;
+    uint32 velocity_per_hour = 3;
+}
+
+message DailyTotalRequest {
+    string user_id = 1;
+}
+
+message DailyTotalResponse {
+    string total_usd = 1;
+}
