@@ -39,7 +39,6 @@ docker-compose.override.yml
 # Cargo.lock
 # pnpm-lock.yaml
 
-# Go binaries
 go-gateway/server
 
 # Go binaries
