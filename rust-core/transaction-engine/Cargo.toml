@@ -19,9 +19,19 @@ chrono.workspace = true
 rust_decimal.workspace = true
 hex = "0.4"
 k256 = { workspace = true}
+# EVM / alloy
+alloy.workspace = true
+alloy-primitives.workspace = true
+alloy-provider.workspace = true
+alloy-rpc-types-eth.workspace = true
+dotenvy.workspace = true 
 
 [dev-dependencies]
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 chrono.workspace = true
 rust_decimal.workspace = true
 uuid.workspace = true
+
+[features]
+default = []
+

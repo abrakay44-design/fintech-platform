@@ -14,6 +14,7 @@
 #![allow(clippy::missing_errors_doc)]
 #![allow(clippy::missing_panics_doc)]
 
+pub mod alloy_engine;
 pub mod error;
 pub mod mock;
 pub mod traits;
@@ -23,3 +24,4 @@ pub use error::TxError;
 pub use mock::MockTransactionEngine;
 pub use traits::TransactionEngine;
 pub use types::{BroadcastResult, Quote, RouteHop, SimulationResult};
+pub use alloy_engine::AlloyTransactionEngine;

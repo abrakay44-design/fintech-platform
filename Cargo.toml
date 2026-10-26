@@ -35,3 +35,24 @@ rust_decimal = { version = "1.36", features = ["serde"] }
 async-trait = "0.1"
 hex = "0.4"
 sha3 = "0.10"
+# EVM / alloy
+alloy = { version = "0.8", features = [
+    "provider-http",
+    "provider-ws",
+    "rpc-types",
+    "rpc-types-eth",
+    "signer-local",
+    "signer-ledger",
+    "signer-trezor",
+    "transport-http",
+    "transport-ws",
+    "consensus",
+    "network",
+    "sol-types",
+] }
+alloy-primitives = "0.8"
+alloy-provider = "0.8"
+alloy-signer = "0.8"
+alloy-signer-local = "0.8"
+alloy-rpc-types-eth = "0.8"
+dotenvy = "0.15"
