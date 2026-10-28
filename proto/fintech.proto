@@ -203,3 +203,26 @@ message DailyTotalRequest {
 message DailyTotalResponse {
     string total_usd = 1;
 }
+
+// ============================================================================
+// Build & Simulate
+// ============================================================================
+
+message BuildRequest {
+    string quote_id = 1;
+    string from_address = 2;   // The user's wallet address (EOA)
+}
+
+message BuildResponse {
+    string unsigned_tx_json = 1; // The EIP-1559 transaction payload for the user to sign
+}
+
+message SimulateRequest {
+    string unsigned_tx_json = 1; // The exact payload returned by Build
+}
+
+message SimulateResponse {
+    bool success = 1;
+    string revert_reason = 2;    // e.g., "insufficient funds for gas"
+    uint64 gas_used = 3;
+}

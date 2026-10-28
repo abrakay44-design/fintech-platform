@@ -14,14 +14,21 @@ use rust_decimal::Decimal;
 use std::sync::Arc;
 use tonic::{Request, Response, Status};
 use uuid::Uuid;
+use std::collections::HashMap;
+use tokio::sync::RwLock;
 
 pub struct SwapServiceImpl {
     pub deps: Arc<Dependencies>,
+    // Cache: quote_id (String) -> Quote
+    pub quote_cache: Arc<RwLock<HashMap<String, transaction_engine::types::Quote>>>,
 }
+
 
 impl SwapServiceImpl {
     pub fn new(deps: Arc<Dependencies>) -> Self {
-        Self { deps }
+        Self { deps,
+	       quote_cache: Arc::new(RwLock::new(HashMap::new())),
+ }
     }
 }
 
@@ -111,32 +118,78 @@ fn tx_status_to_str(status: &TxStatus) -> (&'static str, u64, u32, String) {
 
 #[tonic::async_trait]
 impl SwapService for SwapServiceImpl {
-    async fn quote(
+        async fn quote(
         &self,
         request: Request<QuoteRequest>,
     ) -> Result<Response<QuoteResponse>, Status> {
-        let r = request.into_inner();
+        let req = request.into_inner();
+        
         let intent = parse_intent(
-            &r.user_id,
-            &r.from_asset,
-            &r.to_asset,
-            &r.amount,
-            r.slippage_bps,
+            &req.user_id,
+            &req.from_asset,
+            &req.to_asset,
+            &req.amount,
+            req.slippage_bps,
         )?;
-        let q = self
-            .deps
-            .tx_engine
-            .quote(intent)
-            .await
-            .map_err(status_internal)?;
 
+        // 1. Generate the quote using the engine
+        let quote = self.deps.tx_engine.quote(intent).await.map_err(status_internal)?;
+
+        // 2. Store it in the cache for the Build step
+        self.quote_cache
+            .write()
+            .await
+            .insert(quote.quote_id.to_string(), quote.clone());
+
+        // 3. Return the response
         Ok(Response::new(QuoteResponse {
-            quote_id: q.quote_id.to_string(),
-            expected_out: q.expected_out.value.to_string(),
-            minimum_out: q.minimum_out.value.to_string(),
-            estimated_fee: q.estimated_fee.value.to_string(),
-            expires_at: convert::epoch_to_rfc3339(q.expires_at.timestamp()),
-            route_summary: format!("{} hops", q.route.len()),
+            quote_id: quote.quote_id.to_string(),
+            expected_out: quote.expected_out.value.to_string(),
+            minimum_out: quote.minimum_out.value.to_string(),
+            estimated_fee: quote.estimated_fee.value.to_string(),
+            expires_at: quote.expires_at.to_rfc3339(),
+            route_summary: format!("{} hops", quote.route.len()),
+        }))
+    }
+     
+
+     async fn build(
+        &self,
+        request: Request<BuildRequest>,
+    ) -> Result<Response<BuildResponse>, Status> {
+        let req = request.into_inner();
+        
+        // 1. Look up the quote in the cache
+        let cache = self.quote_cache.read().await;
+        let quote = cache.get(&req.quote_id)
+            .ok_or_else(|| Status::not_found(format!("Quote {} not found", req.quote_id)))?;
+
+        // 2. Call the engine's build method
+        let unsigned_tx = self.deps.tx_engine.build(quote).await.map_err(status_internal)?;
+
+        // 3. Return the JSON string
+        Ok(Response::new(BuildResponse {
+            unsigned_tx_json: String::from_utf8_lossy(&unsigned_tx).to_string(),
+        }))
+    }
+
+    async fn simulate(
+        &self,
+        request: Request<SimulateRequest>,
+    ) -> Result<Response<SimulateResponse>, Status> {
+        let req = request.into_inner();
+        
+        // 1. Convert the JSON string back to bytes
+        let unsigned_tx = req.unsigned_tx_json.into_bytes();
+
+        // 2. Call the engine's simulate method
+        let result = self.deps.tx_engine.simulate(common::Chain::Ethereum, &unsigned_tx).await.map_err(status_internal)?;
+
+        // 3. Return the result
+        Ok(Response::new(SimulateResponse {
+            success: result.success,
+            revert_reason: result.revert_reason.unwrap_or_default(),
+            gas_used: result.gas_used,
         }))
     }
 

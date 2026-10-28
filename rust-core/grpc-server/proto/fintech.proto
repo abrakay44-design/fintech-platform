@@ -11,6 +11,8 @@ option go_package = "github.com/sirabra/fintech-gateway/internal/pb;pb";
 service SwapService {
     // --- Swap ---
     rpc Quote (QuoteRequest) returns (QuoteResponse);
+    rpc Build (BuildRequest) returns (BuildResponse);
+    rpc Simulate (SimulateRequest) returns (SimulateResponse);
     rpc ExecuteSwap (ExecuteSwapRequest) returns (ExecuteSwapResponse);
     rpc GetSwapStatus (StatusRequest) returns (StatusResponse);
 
@@ -204,4 +206,27 @@ message DailyTotalRequest {
 
 message DailyTotalResponse {
     string total_usd = 1;
+}
+
+// ============================================================================
+// Build & Simulate
+// ============================================================================
+
+message BuildRequest {
+    string quote_id = 1;
+    string from_address = 2;
+}
+
+message BuildResponse {
+    string unsigned_tx_json = 1;
+}
+
+message SimulateRequest {
+    string unsigned_tx_json = 1;
+}
+
+message SimulateResponse {
+    bool success = 1;
+    string revert_reason = 2;
+    uint64 gas_used = 3;
 }
