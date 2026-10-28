@@ -19,7 +19,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .init();
 
-    let tx_engine = Arc::new(transaction_engine::mock::MockTransactionEngine::new());
+        // Load .env if present (ignored in Docker — env vars are set directly).
+    dotenvy::dotenv().ok();
+
+    // Live mode is opt-in: only construct AlloyTransactionEngine if the
+    // SEPOLIA_RPC_URL env var is set and non-empty. Otherwise fall back to
+    // the in-memory mock so local dev and unit tests never need an RPC.
+    let use_live = std::env::var("SEPOLIA_RPC_URL")
+        .ok()
+        .filter(|s| !s.is_empty())
+        .is_some();
+
+    let tx_engine: Arc<dyn transaction_engine::TransactionEngine> = if use_live {
+        tracing::info!("SEPOLIA_RPC_URL is set — using live AlloyTransactionEngine");
+        Arc::new(transaction_engine::alloy_engine::from_env()?)
+    } else {
+        tracing::warn!("SEPOLIA_RPC_URL is not set — using MockTransactionEngine");
+        Arc::new(transaction_engine::mock::MockTransactionEngine::new())
+    };
+
     let policy = Arc::new(policy_engine::mock::MockPolicyEngine::new());
     let wallet = Arc::new(wallet_service::NonCustodialService::new());
     let ledger = Arc::new(ledger::mock::MockLedger::new());

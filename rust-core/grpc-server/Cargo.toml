@@ -25,6 +25,7 @@ rust_decimal.workspace = true
 serde_json.workspace = true
 hex.workspace = true
 tonic-reflection = "0.12"
+dotenvy.workspace = true
 
 [build-dependencies]
 tonic-build = "0.12"

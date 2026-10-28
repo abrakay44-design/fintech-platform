@@ -35,6 +35,8 @@ services:
     environment:
       GRPC_ADDR: "0.0.0.0:50051"
       RUST_LOG: "info,grpc_server=debug"
+      SEPOLIA_RPC_URL: "${SEPOLIA_RPC_URL:-}"
+      EVM_CHAIN_ID: "${EVM_CHAIN_ID:-11155111}"
     ports:
       - "50051:50051"
     depends_on:
