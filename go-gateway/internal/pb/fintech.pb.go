@@ -1577,6 +1577,206 @@ func (x *DailyTotalResponse) GetTotalUsd() string {
 	return ""
 }
 
+type BuildRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	QuoteId       string                 `protobuf:"bytes,1,opt,name=quote_id,json=quoteId,proto3" json:"quote_id,omitempty"`
+	FromAddress   string                 `protobuf:"bytes,2,opt,name=from_address,json=fromAddress,proto3" json:"from_address,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BuildRequest) Reset() {
+	*x = BuildRequest{}
+	mi := &file_fintech_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildRequest) ProtoMessage() {}
+
+func (x *BuildRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fintech_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildRequest.ProtoReflect.Descriptor instead.
+func (*BuildRequest) Descriptor() ([]byte, []int) {
+	return file_fintech_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *BuildRequest) GetQuoteId() string {
+	if x != nil {
+		return x.QuoteId
+	}
+	return ""
+}
+
+func (x *BuildRequest) GetFromAddress() string {
+	if x != nil {
+		return x.FromAddress
+	}
+	return ""
+}
+
+type BuildResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UnsignedTxJson string                 `protobuf:"bytes,1,opt,name=unsigned_tx_json,json=unsignedTxJson,proto3" json:"unsigned_tx_json,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *BuildResponse) Reset() {
+	*x = BuildResponse{}
+	mi := &file_fintech_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BuildResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BuildResponse) ProtoMessage() {}
+
+func (x *BuildResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fintech_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BuildResponse.ProtoReflect.Descriptor instead.
+func (*BuildResponse) Descriptor() ([]byte, []int) {
+	return file_fintech_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *BuildResponse) GetUnsignedTxJson() string {
+	if x != nil {
+		return x.UnsignedTxJson
+	}
+	return ""
+}
+
+type SimulateRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UnsignedTxJson string                 `protobuf:"bytes,1,opt,name=unsigned_tx_json,json=unsignedTxJson,proto3" json:"unsigned_tx_json,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *SimulateRequest) Reset() {
+	*x = SimulateRequest{}
+	mi := &file_fintech_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SimulateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimulateRequest) ProtoMessage() {}
+
+func (x *SimulateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fintech_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimulateRequest.ProtoReflect.Descriptor instead.
+func (*SimulateRequest) Descriptor() ([]byte, []int) {
+	return file_fintech_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *SimulateRequest) GetUnsignedTxJson() string {
+	if x != nil {
+		return x.UnsignedTxJson
+	}
+	return ""
+}
+
+type SimulateResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	RevertReason  string                 `protobuf:"bytes,2,opt,name=revert_reason,json=revertReason,proto3" json:"revert_reason,omitempty"`
+	GasUsed       uint64                 `protobuf:"varint,3,opt,name=gas_used,json=gasUsed,proto3" json:"gas_used,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SimulateResponse) Reset() {
+	*x = SimulateResponse{}
+	mi := &file_fintech_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SimulateResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SimulateResponse) ProtoMessage() {}
+
+func (x *SimulateResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fintech_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SimulateResponse.ProtoReflect.Descriptor instead.
+func (*SimulateResponse) Descriptor() ([]byte, []int) {
+	return file_fintech_proto_rawDescGZIP(), []int{28}
+}
+
+func (x *SimulateResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *SimulateResponse) GetRevertReason() string {
+	if x != nil {
+		return x.RevertReason
+	}
+	return ""
+}
+
+func (x *SimulateResponse) GetGasUsed() uint64 {
+	if x != nil {
+		return x.GasUsed
+	}
+	return 0
+}
+
 var File_fintech_proto protoreflect.FileDescriptor
 
 const file_fintech_proto_rawDesc = "" +
@@ -1701,9 +1901,22 @@ const file_fintech_proto_rawDesc = "" +
 	"\x11DailyTotalRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"1\n" +
 	"\x12DailyTotalResponse\x12\x1b\n" +
-	"\ttotal_usd\x18\x01 \x01(\tR\btotalUsd2\xe7\x06\n" +
+	"\ttotal_usd\x18\x01 \x01(\tR\btotalUsd\"L\n" +
+	"\fBuildRequest\x12\x19\n" +
+	"\bquote_id\x18\x01 \x01(\tR\aquoteId\x12!\n" +
+	"\ffrom_address\x18\x02 \x01(\tR\vfromAddress\"9\n" +
+	"\rBuildResponse\x12(\n" +
+	"\x10unsigned_tx_json\x18\x01 \x01(\tR\x0eunsignedTxJson\";\n" +
+	"\x0fSimulateRequest\x12(\n" +
+	"\x10unsigned_tx_json\x18\x01 \x01(\tR\x0eunsignedTxJson\"l\n" +
+	"\x10SimulateResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
+	"\rrevert_reason\x18\x02 \x01(\tR\frevertReason\x12\x19\n" +
+	"\bgas_used\x18\x03 \x01(\x04R\agasUsed2\xec\a\n" +
 	"\vSwapService\x12<\n" +
-	"\x05Quote\x12\x18.fintech.v1.QuoteRequest\x1a\x19.fintech.v1.QuoteResponse\x12N\n" +
+	"\x05Quote\x12\x18.fintech.v1.QuoteRequest\x1a\x19.fintech.v1.QuoteResponse\x12<\n" +
+	"\x05Build\x12\x18.fintech.v1.BuildRequest\x1a\x19.fintech.v1.BuildResponse\x12E\n" +
+	"\bSimulate\x12\x1b.fintech.v1.SimulateRequest\x1a\x1c.fintech.v1.SimulateResponse\x12N\n" +
 	"\vExecuteSwap\x12\x1e.fintech.v1.ExecuteSwapRequest\x1a\x1f.fintech.v1.ExecuteSwapResponse\x12F\n" +
 	"\rGetSwapStatus\x12\x19.fintech.v1.StatusRequest\x1a\x1a.fintech.v1.StatusResponse\x12W\n" +
 	"\x0eRegisterWallet\x12!.fintech.v1.RegisterWalletRequest\x1a\".fintech.v1.RegisterWalletResponse\x12H\n" +
@@ -1728,7 +1941,7 @@ func file_fintech_proto_rawDescGZIP() []byte {
 	return file_fintech_proto_rawDescData
 }
 
-var file_fintech_proto_msgTypes = make([]protoimpl.MessageInfo, 25)
+var file_fintech_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_fintech_proto_goTypes = []any{
 	(*AssetId)(nil),                 // 0: fintech.v1.AssetId
 	(*QuoteRequest)(nil),            // 1: fintech.v1.QuoteRequest
@@ -1755,6 +1968,10 @@ var file_fintech_proto_goTypes = []any{
 	(*LimitsResponse)(nil),          // 22: fintech.v1.LimitsResponse
 	(*DailyTotalRequest)(nil),       // 23: fintech.v1.DailyTotalRequest
 	(*DailyTotalResponse)(nil),      // 24: fintech.v1.DailyTotalResponse
+	(*BuildRequest)(nil),            // 25: fintech.v1.BuildRequest
+	(*BuildResponse)(nil),           // 26: fintech.v1.BuildResponse
+	(*SimulateRequest)(nil),         // 27: fintech.v1.SimulateRequest
+	(*SimulateResponse)(nil),        // 28: fintech.v1.SimulateResponse
 }
 var file_fintech_proto_depIdxs = []int32{
 	10, // 0: fintech.v1.ListWalletsResponse.wallets:type_name -> fintech.v1.GetWalletResponse
@@ -1762,29 +1979,33 @@ var file_fintech_proto_depIdxs = []int32{
 	0,  // 2: fintech.v1.Position.asset:type_name -> fintech.v1.AssetId
 	20, // 3: fintech.v1.TransactionsResponse.transactions:type_name -> fintech.v1.TxSummary
 	1,  // 4: fintech.v1.SwapService.Quote:input_type -> fintech.v1.QuoteRequest
-	3,  // 5: fintech.v1.SwapService.ExecuteSwap:input_type -> fintech.v1.ExecuteSwapRequest
-	5,  // 6: fintech.v1.SwapService.GetSwapStatus:input_type -> fintech.v1.StatusRequest
-	7,  // 7: fintech.v1.SwapService.RegisterWallet:input_type -> fintech.v1.RegisterWalletRequest
-	9,  // 8: fintech.v1.SwapService.GetWallet:input_type -> fintech.v1.GetWalletRequest
-	11, // 9: fintech.v1.SwapService.ListWallets:input_type -> fintech.v1.ListWalletsRequest
-	13, // 10: fintech.v1.SwapService.VerifySignature:input_type -> fintech.v1.VerifySignatureRequest
-	15, // 11: fintech.v1.SwapService.GetPortfolio:input_type -> fintech.v1.PortfolioRequest
-	18, // 12: fintech.v1.SwapService.ListTransactions:input_type -> fintech.v1.TransactionsRequest
-	21, // 13: fintech.v1.SwapService.GetLimits:input_type -> fintech.v1.LimitsRequest
-	23, // 14: fintech.v1.SwapService.DailyTotal:input_type -> fintech.v1.DailyTotalRequest
-	2,  // 15: fintech.v1.SwapService.Quote:output_type -> fintech.v1.QuoteResponse
-	4,  // 16: fintech.v1.SwapService.ExecuteSwap:output_type -> fintech.v1.ExecuteSwapResponse
-	6,  // 17: fintech.v1.SwapService.GetSwapStatus:output_type -> fintech.v1.StatusResponse
-	8,  // 18: fintech.v1.SwapService.RegisterWallet:output_type -> fintech.v1.RegisterWalletResponse
-	10, // 19: fintech.v1.SwapService.GetWallet:output_type -> fintech.v1.GetWalletResponse
-	12, // 20: fintech.v1.SwapService.ListWallets:output_type -> fintech.v1.ListWalletsResponse
-	14, // 21: fintech.v1.SwapService.VerifySignature:output_type -> fintech.v1.VerifySignatureResponse
-	16, // 22: fintech.v1.SwapService.GetPortfolio:output_type -> fintech.v1.PortfolioResponse
-	19, // 23: fintech.v1.SwapService.ListTransactions:output_type -> fintech.v1.TransactionsResponse
-	22, // 24: fintech.v1.SwapService.GetLimits:output_type -> fintech.v1.LimitsResponse
-	24, // 25: fintech.v1.SwapService.DailyTotal:output_type -> fintech.v1.DailyTotalResponse
-	15, // [15:26] is the sub-list for method output_type
-	4,  // [4:15] is the sub-list for method input_type
+	25, // 5: fintech.v1.SwapService.Build:input_type -> fintech.v1.BuildRequest
+	27, // 6: fintech.v1.SwapService.Simulate:input_type -> fintech.v1.SimulateRequest
+	3,  // 7: fintech.v1.SwapService.ExecuteSwap:input_type -> fintech.v1.ExecuteSwapRequest
+	5,  // 8: fintech.v1.SwapService.GetSwapStatus:input_type -> fintech.v1.StatusRequest
+	7,  // 9: fintech.v1.SwapService.RegisterWallet:input_type -> fintech.v1.RegisterWalletRequest
+	9,  // 10: fintech.v1.SwapService.GetWallet:input_type -> fintech.v1.GetWalletRequest
+	11, // 11: fintech.v1.SwapService.ListWallets:input_type -> fintech.v1.ListWalletsRequest
+	13, // 12: fintech.v1.SwapService.VerifySignature:input_type -> fintech.v1.VerifySignatureRequest
+	15, // 13: fintech.v1.SwapService.GetPortfolio:input_type -> fintech.v1.PortfolioRequest
+	18, // 14: fintech.v1.SwapService.ListTransactions:input_type -> fintech.v1.TransactionsRequest
+	21, // 15: fintech.v1.SwapService.GetLimits:input_type -> fintech.v1.LimitsRequest
+	23, // 16: fintech.v1.SwapService.DailyTotal:input_type -> fintech.v1.DailyTotalRequest
+	2,  // 17: fintech.v1.SwapService.Quote:output_type -> fintech.v1.QuoteResponse
+	26, // 18: fintech.v1.SwapService.Build:output_type -> fintech.v1.BuildResponse
+	28, // 19: fintech.v1.SwapService.Simulate:output_type -> fintech.v1.SimulateResponse
+	4,  // 20: fintech.v1.SwapService.ExecuteSwap:output_type -> fintech.v1.ExecuteSwapResponse
+	6,  // 21: fintech.v1.SwapService.GetSwapStatus:output_type -> fintech.v1.StatusResponse
+	8,  // 22: fintech.v1.SwapService.RegisterWallet:output_type -> fintech.v1.RegisterWalletResponse
+	10, // 23: fintech.v1.SwapService.GetWallet:output_type -> fintech.v1.GetWalletResponse
+	12, // 24: fintech.v1.SwapService.ListWallets:output_type -> fintech.v1.ListWalletsResponse
+	14, // 25: fintech.v1.SwapService.VerifySignature:output_type -> fintech.v1.VerifySignatureResponse
+	16, // 26: fintech.v1.SwapService.GetPortfolio:output_type -> fintech.v1.PortfolioResponse
+	19, // 27: fintech.v1.SwapService.ListTransactions:output_type -> fintech.v1.TransactionsResponse
+	22, // 28: fintech.v1.SwapService.GetLimits:output_type -> fintech.v1.LimitsResponse
+	24, // 29: fintech.v1.SwapService.DailyTotal:output_type -> fintech.v1.DailyTotalResponse
+	17, // [17:30] is the sub-list for method output_type
+	4,  // [4:17] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -1801,7 +2022,7 @@ func file_fintech_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fintech_proto_rawDesc), len(file_fintech_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   25,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

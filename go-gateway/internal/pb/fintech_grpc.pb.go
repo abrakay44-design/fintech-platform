@@ -20,6 +20,8 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	SwapService_Quote_FullMethodName            = "/fintech.v1.SwapService/Quote"
+	SwapService_Build_FullMethodName            = "/fintech.v1.SwapService/Build"
+	SwapService_Simulate_FullMethodName         = "/fintech.v1.SwapService/Simulate"
 	SwapService_ExecuteSwap_FullMethodName      = "/fintech.v1.SwapService/ExecuteSwap"
 	SwapService_GetSwapStatus_FullMethodName    = "/fintech.v1.SwapService/GetSwapStatus"
 	SwapService_RegisterWallet_FullMethodName   = "/fintech.v1.SwapService/RegisterWallet"
@@ -38,6 +40,8 @@ const (
 type SwapServiceClient interface {
 	// --- Swap ---
 	Quote(ctx context.Context, in *QuoteRequest, opts ...grpc.CallOption) (*QuoteResponse, error)
+	Build(ctx context.Context, in *BuildRequest, opts ...grpc.CallOption) (*BuildResponse, error)
+	Simulate(ctx context.Context, in *SimulateRequest, opts ...grpc.CallOption) (*SimulateResponse, error)
 	ExecuteSwap(ctx context.Context, in *ExecuteSwapRequest, opts ...grpc.CallOption) (*ExecuteSwapResponse, error)
 	GetSwapStatus(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	// --- Wallet ---
@@ -65,6 +69,26 @@ func (c *swapServiceClient) Quote(ctx context.Context, in *QuoteRequest, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(QuoteResponse)
 	err := c.cc.Invoke(ctx, SwapService_Quote_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *swapServiceClient) Build(ctx context.Context, in *BuildRequest, opts ...grpc.CallOption) (*BuildResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BuildResponse)
+	err := c.cc.Invoke(ctx, SwapService_Build_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *swapServiceClient) Simulate(ctx context.Context, in *SimulateRequest, opts ...grpc.CallOption) (*SimulateResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SimulateResponse)
+	err := c.cc.Invoke(ctx, SwapService_Simulate_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,6 +201,8 @@ func (c *swapServiceClient) DailyTotal(ctx context.Context, in *DailyTotalReques
 type SwapServiceServer interface {
 	// --- Swap ---
 	Quote(context.Context, *QuoteRequest) (*QuoteResponse, error)
+	Build(context.Context, *BuildRequest) (*BuildResponse, error)
+	Simulate(context.Context, *SimulateRequest) (*SimulateResponse, error)
 	ExecuteSwap(context.Context, *ExecuteSwapRequest) (*ExecuteSwapResponse, error)
 	GetSwapStatus(context.Context, *StatusRequest) (*StatusResponse, error)
 	// --- Wallet ---
@@ -202,6 +228,12 @@ type UnimplementedSwapServiceServer struct{}
 
 func (UnimplementedSwapServiceServer) Quote(context.Context, *QuoteRequest) (*QuoteResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Quote not implemented")
+}
+func (UnimplementedSwapServiceServer) Build(context.Context, *BuildRequest) (*BuildResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Build not implemented")
+}
+func (UnimplementedSwapServiceServer) Simulate(context.Context, *SimulateRequest) (*SimulateResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method Simulate not implemented")
 }
 func (UnimplementedSwapServiceServer) ExecuteSwap(context.Context, *ExecuteSwapRequest) (*ExecuteSwapResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExecuteSwap not implemented")
@@ -268,6 +300,42 @@ func _SwapService_Quote_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SwapServiceServer).Quote(ctx, req.(*QuoteRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SwapService_Build_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BuildRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SwapServiceServer).Build(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SwapService_Build_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SwapServiceServer).Build(ctx, req.(*BuildRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SwapService_Simulate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimulateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SwapServiceServer).Simulate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SwapService_Simulate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SwapServiceServer).Simulate(ctx, req.(*SimulateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -462,6 +530,14 @@ var SwapService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Quote",
 			Handler:    _SwapService_Quote_Handler,
+		},
+		{
+			MethodName: "Build",
+			Handler:    _SwapService_Build_Handler,
+		},
+		{
+			MethodName: "Simulate",
+			Handler:    _SwapService_Simulate_Handler,
 		},
 		{
 			MethodName: "ExecuteSwap",

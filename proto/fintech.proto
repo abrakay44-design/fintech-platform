@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package fintech.v1;
 
+option go_package = "github.com/sirabra/fintech-gateway/internal/pb;pb";
+
 // ============================================================================
 // SwapService — the complete gRPC surface exposed by the Rust core.
 // ============================================================================
@@ -9,6 +11,8 @@ package fintech.v1;
 service SwapService {
     // --- Swap ---
     rpc Quote (QuoteRequest) returns (QuoteResponse);
+    rpc Build (BuildRequest) returns (BuildResponse);
+    rpc Simulate (SimulateRequest) returns (SimulateResponse);
     rpc ExecuteSwap (ExecuteSwapRequest) returns (ExecuteSwapResponse);
     rpc GetSwapStatus (StatusRequest) returns (StatusResponse);
 
@@ -210,19 +214,19 @@ message DailyTotalResponse {
 
 message BuildRequest {
     string quote_id = 1;
-    string from_address = 2;   // The user's wallet address (EOA)
+    string from_address = 2;
 }
 
 message BuildResponse {
-    string unsigned_tx_json = 1; // The EIP-1559 transaction payload for the user to sign
+    string unsigned_tx_json = 1;
 }
 
 message SimulateRequest {
-    string unsigned_tx_json = 1; // The exact payload returned by Build
+    string unsigned_tx_json = 1;
 }
 
 message SimulateResponse {
     bool success = 1;
-    string revert_reason = 2;    // e.g., "insufficient funds for gas"
+    string revert_reason = 2;
     uint64 gas_used = 3;
 }

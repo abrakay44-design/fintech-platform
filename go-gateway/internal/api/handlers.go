@@ -167,3 +167,51 @@ func (h *Handlers) DailyTotal(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, resp)
 }
+
+// ── Build ────────────────────────────────────────────────────────────────
+
+type buildReq struct {
+	QuoteID     string `json:"quote_id"`
+	FromAddress string `json:"from_address"`
+}
+
+func (h *Handlers) Build(w http.ResponseWriter, r *http.Request) {
+	var body buildReq
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeError(w, h.Logger, http.StatusBadRequest, "invalid_json", err.Error())
+		return
+	}
+	resp, err := h.GRPC.Build(r.Context(), &pb.BuildRequest{
+		QuoteId:     body.QuoteID,
+		FromAddress: body.FromAddress,
+	})
+	if err != nil {
+		hs, code := grpcToHTTP(err)
+		writeError(w, h.Logger, hs, code, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// ── Simulate ─────────────────────────────────────────────────────────────
+
+type simulateReq struct {
+	UnsignedTxJson string `json:"unsigned_tx_json"`
+}
+
+func (h *Handlers) Simulate(w http.ResponseWriter, r *http.Request) {
+	var body simulateReq
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		writeError(w, h.Logger, http.StatusBadRequest, "invalid_json", err.Error())
+		return
+	}
+	resp, err := h.GRPC.Simulate(r.Context(), &pb.SimulateRequest{
+		UnsignedTxJson: body.UnsignedTxJson,
+	})
+	if err != nil {
+		hs, code := grpcToHTTP(err)
+		writeError(w, h.Logger, hs, code, err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, resp)
+}
