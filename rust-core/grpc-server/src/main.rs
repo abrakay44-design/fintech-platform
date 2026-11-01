@@ -40,7 +40,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let policy = Arc::new(policy_engine::mock::MockPolicyEngine::new());
     let wallet = Arc::new(wallet_service::NonCustodialService::new());
-    let ledger = Arc::new(ledger::mock::MockLedger::new());
+
+    let db_url = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://fintech:dev_password@localhost:5432/fintech".into());
+    tracing::info!("Connecting to Postgres...");
+    let pool = sqlx::PgPool::connect(&db_url).await?;
+    tracing::info!("Running database migrations...");
+    sqlx::migrate!("../ledger/migrations").run(&pool).await?;
+    let ledger = Arc::new(ledger::PostgresLedger::new(pool));
 
     let deps = Arc::new(Dependencies {
         tx_engine,

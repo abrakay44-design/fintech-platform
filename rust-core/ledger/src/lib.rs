@@ -15,11 +15,13 @@
 
 pub mod error;
 pub mod mock;
+pub mod postgres;
 pub mod traits;
 pub mod types;
 
 pub use error::LedgerError;
 pub use mock::MockLedger;
+pub use postgres::PostgresLedger;
 pub use traits::Ledger;
 pub use types::{
     AccountId, Balance, Discrepancy, Entry, Post, ReconciliationReport,

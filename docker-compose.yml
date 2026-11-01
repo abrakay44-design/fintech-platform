@@ -37,6 +37,7 @@ services:
       RUST_LOG: "info,grpc_server=debug"
       SEPOLIA_RPC_URL: "${SEPOLIA_RPC_URL:-}"
       EVM_CHAIN_ID: "${EVM_CHAIN_ID:-11155111}"
+      DATABASE_URL: "postgres://fintech:dev_password@postgres:5432/fintech"
     ports:
       - "50051:50051"
     depends_on:
