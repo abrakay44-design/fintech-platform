@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	grpcclient "github.com/sirabra/fintech-gateway/internal/grpc"
+	"github.com/sirabra/fintech-gateway/internal/auth"
 	"github.com/sirabra/fintech-gateway/internal/pb"
 )
 
@@ -38,8 +39,15 @@ func (h *Handlers) Quote(w http.ResponseWriter, r *http.Request) {
 		writeError(w, h.Logger, http.StatusBadRequest, "invalid_json", err.Error())
 		return
 	}
+	// Extract the authenticated user ID from the JWT context
+	userID, ok := r.Context().Value(auth.UserIDKey).(string)
+	if !ok {
+		writeError(w, h.Logger, http.StatusUnauthorized, "unauthorized", "missing user context")
+		return
+	}
+
 	resp, err := h.GRPC.Quote(r.Context(), &pb.QuoteRequest{
-		UserId:      body.UserID,
+		UserId:      userID,
 		FromAsset:   body.FromAsset,
 		ToAsset:     body.ToAsset,
 		Amount:      body.Amount,

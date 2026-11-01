@@ -7,11 +7,10 @@ import axios from "axios";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export default function Home() {
-  // ── Hydration guard: don't render wallet UI until client mounts ──
   const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   const { address, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
@@ -22,43 +21,57 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
 
+  // Mock login when wallet connects
+  useEffect(() => {
+    async function login() {
+      if (!isConnected || !address) return;
+      try {
+        const res = await axios.post(`${API_URL}/auth/login`, {
+          user_id: "12345678-1234-1234-1234-1234567890ab" // Mock user ID mapped to this wallet
+        });
+        setAuthToken(res.data.token);
+        setStatus("Authenticated successfully");
+      } catch (err) {
+        setStatus("Failed to authenticate");
+      }
+    }
+    login();
+  }, [isConnected, address]);
+
   async function handleSwap() {
-    if (!isConnected || !address) return;
+    if (!isConnected || !address || !authToken) return;
     setLoading(true);
     setStatus("1. Fetching quote...");
     setResult(null);
 
     try {
+      const config = { headers: { Authorization: `Bearer ${authToken}` } };
+
       const quoteRes = await axios.post(`${API_URL}/v1/transactions/quote`, {
-        user_id: "00000000-0000-0000-0000-000000000001",
         from_asset: "ETH",
         to_asset: "USDC",
         amount,
         slippage_bps: 50,
-      });
+      }, config);
       const quote = quoteRes.data;
 
       setStatus("2. Building transaction...");
       const buildRes = await axios.post(`${API_URL}/v1/transactions/build`, {
         quote_id: quote.quote_id,
         from_address: address,
-      });
+      }, config);
       const unsignedTx = buildRes.data.unsigned_tx_json;
 
       setStatus("3. Simulating on Sepolia...");
       const simRes = await axios.post(`${API_URL}/v1/transactions/simulate`, {
         unsigned_tx_json: unsignedTx,
-      });
+      }, config);
 
-      setResult({
-        quote,
-        unsignedTx,
-        simulation: simRes.data,
-      });
+      setResult({ quote, unsignedTx, simulation: simRes.data });
       setStatus("Success!");
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.message || err.message}`);
+      setStatus(`Error: ${err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -69,13 +82,11 @@ export default function Home() {
       <div className="w-full max-w-md bg-gray-900 rounded-2xl p-6 shadow-xl border border-gray-800">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Fintech Swap</h1>
-
-          {/* Render nothing until mounted — prevents SSR/client mismatch */}
           {!mounted ? (
             <div className="px-4 py-2 w-32 h-9 bg-gray-800 rounded-lg animate-pulse" />
           ) : isConnected ? (
             <button
-              onClick={() => disconnect()}
+              onClick={() => { disconnect(); setAuthToken(null); setStatus(null); setResult(null); }}
               className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition"
             >
               Disconnect
@@ -104,21 +115,17 @@ export default function Home() {
 
             <button
               onClick={handleSwap}
-              disabled={loading}
+              disabled={loading || !authToken}
               className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold text-lg transition"
             >
-              {loading ? "Processing..." : "Swap ETH for USDC"}
+              {loading ? "Processing..." : !authToken ? "Authenticating..." : "Swap ETH for USDC"}
             </button>
 
-            {status && (
-              <p className="text-center text-sm font-mono text-blue-400">{status}</p>
-            )}
-
+            {status && <p className="text-center text-sm font-mono text-blue-400">{status}</p>}
             {result && (
               <div className="mt-4 p-4 bg-black rounded-xl border border-gray-700 overflow-x-auto text-xs font-mono text-green-400">
                 <p className="mb-2">Quote: {result.quote.expected_out} USDC</p>
                 <p className="mb-2">Simulation: {result.simulation.success ? "✅ Success" : "❌ Failed"}</p>
-                <p className="text-gray-500 break-all">{result.unsignedTx}</p>
               </div>
             )}
           </div>

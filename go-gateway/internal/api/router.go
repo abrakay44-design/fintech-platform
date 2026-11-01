@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 	grpcclient "github.com/sirabra/fintech-gateway/internal/grpc"
+	"github.com/sirabra/fintech-gateway/internal/auth"
 )
 
 // NewRouter builds the chi router with all REST endpoints wired to the
@@ -33,8 +34,10 @@ func NewRouter(gc *grpcclient.Client, logger *slog.Logger) http.Handler {
 	}))
 
 	r.Get("/healthz", h.Healthz)
+	r.Post("/auth/login", h.Login)
 
 	r.Route("/v1", func(r chi.Router) {
+		r.Use(auth.RequireAuth)
 		r.Route("/transactions", func(r chi.Router) {
 			r.Post("/quote", h.Quote)
 			r.Post("/build", h.Build)
