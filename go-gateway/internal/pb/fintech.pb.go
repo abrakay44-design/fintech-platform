@@ -1777,6 +1777,110 @@ func (x *SimulateResponse) GetGasUsed() uint64 {
 	return 0
 }
 
+type BroadcastRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chain         string                 `protobuf:"bytes,1,opt,name=chain,proto3" json:"chain,omitempty"`
+	SignedTxHex   string                 `protobuf:"bytes,2,opt,name=signed_tx_hex,json=signedTxHex,proto3" json:"signed_tx_hex,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BroadcastRequest) Reset() {
+	*x = BroadcastRequest{}
+	mi := &file_fintech_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BroadcastRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BroadcastRequest) ProtoMessage() {}
+
+func (x *BroadcastRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_fintech_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BroadcastRequest.ProtoReflect.Descriptor instead.
+func (*BroadcastRequest) Descriptor() ([]byte, []int) {
+	return file_fintech_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *BroadcastRequest) GetChain() string {
+	if x != nil {
+		return x.Chain
+	}
+	return ""
+}
+
+func (x *BroadcastRequest) GetSignedTxHex() string {
+	if x != nil {
+		return x.SignedTxHex
+	}
+	return ""
+}
+
+type BroadcastResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TxHash        string                 `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *BroadcastResponse) Reset() {
+	*x = BroadcastResponse{}
+	mi := &file_fintech_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *BroadcastResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*BroadcastResponse) ProtoMessage() {}
+
+func (x *BroadcastResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_fintech_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use BroadcastResponse.ProtoReflect.Descriptor instead.
+func (*BroadcastResponse) Descriptor() ([]byte, []int) {
+	return file_fintech_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *BroadcastResponse) GetTxHash() string {
+	if x != nil {
+		return x.TxHash
+	}
+	return ""
+}
+
+func (x *BroadcastResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
 var File_fintech_proto protoreflect.FileDescriptor
 
 const file_fintech_proto_rawDesc = "" +
@@ -1912,11 +2016,18 @@ const file_fintech_proto_rawDesc = "" +
 	"\x10SimulateResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12#\n" +
 	"\rrevert_reason\x18\x02 \x01(\tR\frevertReason\x12\x19\n" +
-	"\bgas_used\x18\x03 \x01(\x04R\agasUsed2\xec\a\n" +
+	"\bgas_used\x18\x03 \x01(\x04R\agasUsed\"L\n" +
+	"\x10BroadcastRequest\x12\x14\n" +
+	"\x05chain\x18\x01 \x01(\tR\x05chain\x12\"\n" +
+	"\rsigned_tx_hex\x18\x02 \x01(\tR\vsignedTxHex\"D\n" +
+	"\x11BroadcastResponse\x12\x17\n" +
+	"\atx_hash\x18\x01 \x01(\tR\x06txHash\x12\x16\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status2\xc1\b\n" +
 	"\vSwapService\x12<\n" +
 	"\x05Quote\x12\x18.fintech.v1.QuoteRequest\x1a\x19.fintech.v1.QuoteResponse\x12<\n" +
 	"\x05Build\x12\x18.fintech.v1.BuildRequest\x1a\x19.fintech.v1.BuildResponse\x12E\n" +
-	"\bSimulate\x12\x1b.fintech.v1.SimulateRequest\x1a\x1c.fintech.v1.SimulateResponse\x12N\n" +
+	"\bSimulate\x12\x1b.fintech.v1.SimulateRequest\x1a\x1c.fintech.v1.SimulateResponse\x12S\n" +
+	"\x14BroadcastTransaction\x12\x1c.fintech.v1.BroadcastRequest\x1a\x1d.fintech.v1.BroadcastResponse\x12N\n" +
 	"\vExecuteSwap\x12\x1e.fintech.v1.ExecuteSwapRequest\x1a\x1f.fintech.v1.ExecuteSwapResponse\x12F\n" +
 	"\rGetSwapStatus\x12\x19.fintech.v1.StatusRequest\x1a\x1a.fintech.v1.StatusResponse\x12W\n" +
 	"\x0eRegisterWallet\x12!.fintech.v1.RegisterWalletRequest\x1a\".fintech.v1.RegisterWalletResponse\x12H\n" +
@@ -1941,7 +2052,7 @@ func file_fintech_proto_rawDescGZIP() []byte {
 	return file_fintech_proto_rawDescData
 }
 
-var file_fintech_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
+var file_fintech_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_fintech_proto_goTypes = []any{
 	(*AssetId)(nil),                 // 0: fintech.v1.AssetId
 	(*QuoteRequest)(nil),            // 1: fintech.v1.QuoteRequest
@@ -1972,6 +2083,8 @@ var file_fintech_proto_goTypes = []any{
 	(*BuildResponse)(nil),           // 26: fintech.v1.BuildResponse
 	(*SimulateRequest)(nil),         // 27: fintech.v1.SimulateRequest
 	(*SimulateResponse)(nil),        // 28: fintech.v1.SimulateResponse
+	(*BroadcastRequest)(nil),        // 29: fintech.v1.BroadcastRequest
+	(*BroadcastResponse)(nil),       // 30: fintech.v1.BroadcastResponse
 }
 var file_fintech_proto_depIdxs = []int32{
 	10, // 0: fintech.v1.ListWalletsResponse.wallets:type_name -> fintech.v1.GetWalletResponse
@@ -1981,31 +2094,33 @@ var file_fintech_proto_depIdxs = []int32{
 	1,  // 4: fintech.v1.SwapService.Quote:input_type -> fintech.v1.QuoteRequest
 	25, // 5: fintech.v1.SwapService.Build:input_type -> fintech.v1.BuildRequest
 	27, // 6: fintech.v1.SwapService.Simulate:input_type -> fintech.v1.SimulateRequest
-	3,  // 7: fintech.v1.SwapService.ExecuteSwap:input_type -> fintech.v1.ExecuteSwapRequest
-	5,  // 8: fintech.v1.SwapService.GetSwapStatus:input_type -> fintech.v1.StatusRequest
-	7,  // 9: fintech.v1.SwapService.RegisterWallet:input_type -> fintech.v1.RegisterWalletRequest
-	9,  // 10: fintech.v1.SwapService.GetWallet:input_type -> fintech.v1.GetWalletRequest
-	11, // 11: fintech.v1.SwapService.ListWallets:input_type -> fintech.v1.ListWalletsRequest
-	13, // 12: fintech.v1.SwapService.VerifySignature:input_type -> fintech.v1.VerifySignatureRequest
-	15, // 13: fintech.v1.SwapService.GetPortfolio:input_type -> fintech.v1.PortfolioRequest
-	18, // 14: fintech.v1.SwapService.ListTransactions:input_type -> fintech.v1.TransactionsRequest
-	21, // 15: fintech.v1.SwapService.GetLimits:input_type -> fintech.v1.LimitsRequest
-	23, // 16: fintech.v1.SwapService.DailyTotal:input_type -> fintech.v1.DailyTotalRequest
-	2,  // 17: fintech.v1.SwapService.Quote:output_type -> fintech.v1.QuoteResponse
-	26, // 18: fintech.v1.SwapService.Build:output_type -> fintech.v1.BuildResponse
-	28, // 19: fintech.v1.SwapService.Simulate:output_type -> fintech.v1.SimulateResponse
-	4,  // 20: fintech.v1.SwapService.ExecuteSwap:output_type -> fintech.v1.ExecuteSwapResponse
-	6,  // 21: fintech.v1.SwapService.GetSwapStatus:output_type -> fintech.v1.StatusResponse
-	8,  // 22: fintech.v1.SwapService.RegisterWallet:output_type -> fintech.v1.RegisterWalletResponse
-	10, // 23: fintech.v1.SwapService.GetWallet:output_type -> fintech.v1.GetWalletResponse
-	12, // 24: fintech.v1.SwapService.ListWallets:output_type -> fintech.v1.ListWalletsResponse
-	14, // 25: fintech.v1.SwapService.VerifySignature:output_type -> fintech.v1.VerifySignatureResponse
-	16, // 26: fintech.v1.SwapService.GetPortfolio:output_type -> fintech.v1.PortfolioResponse
-	19, // 27: fintech.v1.SwapService.ListTransactions:output_type -> fintech.v1.TransactionsResponse
-	22, // 28: fintech.v1.SwapService.GetLimits:output_type -> fintech.v1.LimitsResponse
-	24, // 29: fintech.v1.SwapService.DailyTotal:output_type -> fintech.v1.DailyTotalResponse
-	17, // [17:30] is the sub-list for method output_type
-	4,  // [4:17] is the sub-list for method input_type
+	29, // 7: fintech.v1.SwapService.BroadcastTransaction:input_type -> fintech.v1.BroadcastRequest
+	3,  // 8: fintech.v1.SwapService.ExecuteSwap:input_type -> fintech.v1.ExecuteSwapRequest
+	5,  // 9: fintech.v1.SwapService.GetSwapStatus:input_type -> fintech.v1.StatusRequest
+	7,  // 10: fintech.v1.SwapService.RegisterWallet:input_type -> fintech.v1.RegisterWalletRequest
+	9,  // 11: fintech.v1.SwapService.GetWallet:input_type -> fintech.v1.GetWalletRequest
+	11, // 12: fintech.v1.SwapService.ListWallets:input_type -> fintech.v1.ListWalletsRequest
+	13, // 13: fintech.v1.SwapService.VerifySignature:input_type -> fintech.v1.VerifySignatureRequest
+	15, // 14: fintech.v1.SwapService.GetPortfolio:input_type -> fintech.v1.PortfolioRequest
+	18, // 15: fintech.v1.SwapService.ListTransactions:input_type -> fintech.v1.TransactionsRequest
+	21, // 16: fintech.v1.SwapService.GetLimits:input_type -> fintech.v1.LimitsRequest
+	23, // 17: fintech.v1.SwapService.DailyTotal:input_type -> fintech.v1.DailyTotalRequest
+	2,  // 18: fintech.v1.SwapService.Quote:output_type -> fintech.v1.QuoteResponse
+	26, // 19: fintech.v1.SwapService.Build:output_type -> fintech.v1.BuildResponse
+	28, // 20: fintech.v1.SwapService.Simulate:output_type -> fintech.v1.SimulateResponse
+	30, // 21: fintech.v1.SwapService.BroadcastTransaction:output_type -> fintech.v1.BroadcastResponse
+	4,  // 22: fintech.v1.SwapService.ExecuteSwap:output_type -> fintech.v1.ExecuteSwapResponse
+	6,  // 23: fintech.v1.SwapService.GetSwapStatus:output_type -> fintech.v1.StatusResponse
+	8,  // 24: fintech.v1.SwapService.RegisterWallet:output_type -> fintech.v1.RegisterWalletResponse
+	10, // 25: fintech.v1.SwapService.GetWallet:output_type -> fintech.v1.GetWalletResponse
+	12, // 26: fintech.v1.SwapService.ListWallets:output_type -> fintech.v1.ListWalletsResponse
+	14, // 27: fintech.v1.SwapService.VerifySignature:output_type -> fintech.v1.VerifySignatureResponse
+	16, // 28: fintech.v1.SwapService.GetPortfolio:output_type -> fintech.v1.PortfolioResponse
+	19, // 29: fintech.v1.SwapService.ListTransactions:output_type -> fintech.v1.TransactionsResponse
+	22, // 30: fintech.v1.SwapService.GetLimits:output_type -> fintech.v1.LimitsResponse
+	24, // 31: fintech.v1.SwapService.DailyTotal:output_type -> fintech.v1.DailyTotalResponse
+	18, // [18:32] is the sub-list for method output_type
+	4,  // [4:18] is the sub-list for method input_type
 	4,  // [4:4] is the sub-list for extension type_name
 	4,  // [4:4] is the sub-list for extension extendee
 	0,  // [0:4] is the sub-list for field type_name
@@ -2022,7 +2137,7 @@ func file_fintech_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_fintech_proto_rawDesc), len(file_fintech_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   29,
+			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

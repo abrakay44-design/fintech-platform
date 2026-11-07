@@ -49,6 +49,7 @@ func NewRouter(gc *grpcclient.Client, logger *slog.Logger, db *pgxpool.Pool, wa 
 			r.Post("/quote", h.Quote)
 			r.Post("/build", h.Build)
 			r.Post("/simulate", h.Simulate)
+			r.Post("/broadcast", h.BroadcastTransaction)
 			r.Post("/execute", h.ExecuteSwap)
 			r.Get("/status", h.SwapStatus)
 		})

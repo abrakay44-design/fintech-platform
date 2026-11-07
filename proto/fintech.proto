@@ -13,6 +13,7 @@ service SwapService {
     rpc Quote (QuoteRequest) returns (QuoteResponse);
     rpc Build (BuildRequest) returns (BuildResponse);
     rpc Simulate (SimulateRequest) returns (SimulateResponse);
+    rpc BroadcastTransaction (BroadcastRequest) returns (BroadcastResponse);
     rpc ExecuteSwap (ExecuteSwapRequest) returns (ExecuteSwapResponse);
     rpc GetSwapStatus (StatusRequest) returns (StatusResponse);
 
@@ -229,4 +230,14 @@ message SimulateResponse {
     bool success = 1;
     string revert_reason = 2;
     uint64 gas_used = 3;
+}
+
+message BroadcastRequest {
+    string chain = 1;
+    string signed_tx_hex = 2;
+}
+
+message BroadcastResponse {
+    string tx_hash = 1;
+    string status = 2;
 }

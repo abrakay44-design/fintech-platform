@@ -122,7 +122,7 @@ async fn execute_swap_succeeds_when_allowed() {
 
     // Build the unsigned payload that the mock tx engine will produce.
     let quote = tx_engine.quote(intent.clone()).await.unwrap();
-    let unsigned = tx_engine.build(&quote).await.unwrap();
+    let unsigned = tx_engine.build(&quote, "0x0000000000000000000000000000000000000001").await.unwrap();
 
     let (handle, signature) = register_and_sign(&wallet, &unsigned).await;
 
@@ -173,6 +173,7 @@ async fn execute_swap_aborts_when_denied() {
         to_account: AccountId::new(),
         wallet_handle: wallet_service::PublicKeyHandle(Uuid::new_v4()),
         signature: Signature(vec![0u8; 65]),
+        from_address: "0x0000000000000000000000000000000000000001".into(),
         intent,
     };
 
@@ -196,7 +197,7 @@ async fn execute_swap_ledger_post_is_balanced() {
     let ledger = Arc::new(MockLedger::new());
 
     let quote = tx_engine.quote(intent.clone()).await.unwrap();
-    let unsigned = tx_engine.build(&quote).await.unwrap();
+    let unsigned = tx_engine.build(&quote, "0x0000000000000000000000000000000000000001").await.unwrap();
     let (handle, signature) = register_and_sign(&wallet, &unsigned).await;
 
     let from_account = AccountId::new();
@@ -213,6 +214,7 @@ async fn execute_swap_ledger_post_is_balanced() {
         wallet_handle: handle,
         signature,
         intent: intent.clone(),
+        from_address: "0x0000000000000000000000000000000000000001".into(),
     };
 
     let receipt = execute_swap(&deps, req).await.expect("swap");

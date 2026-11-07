@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { privateKeyToAccount } from "viem/accounts";
 import { bufferToBase64Url, base64UrlToBuffer } from "@/lib/webauthn";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -13,9 +14,10 @@ export default function Home() {
   const [status, setStatus] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Swap state
   const [amount, setAmount] = useState("0.001");
   const [swapResult, setSwapResult] = useState<any>(null);
+  const [broadcastStatus, setBroadcastStatus] = useState<string | null>(null);
+  const [txHash, setTxHash] = useState<string | null>(null);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -23,38 +25,33 @@ export default function Home() {
     if (!username) return setStatus("Enter an email first.");
     setLoading(true);
     setStatus("Waiting for biometrics (register)...");
-
     try {
-      // 1. Get challenge
       const beginRes = await axios.post(`${API_URL}/auth/webauthn/register/begin`, { username });
       const options = beginRes.data.publicKey;
-
-      // 2. Convert challenge and user.id to ArrayBuffer
       options.challenge = base64UrlToBuffer(options.challenge);
       options.user.id = base64UrlToBuffer(options.user.id);
 
-      // 3. Trigger biometric prompt
       const credential = (await navigator.credentials.create({ publicKey: options })) as PublicKeyCredential;
       if (!credential) throw new Error("Registration cancelled");
-
       const response = credential.response as AuthenticatorAttestationResponse;
 
-      // 4. Send result to backend
-      const finishRes = await axios.post(`${API_URL}/auth/webauthn/register/finish?username=${encodeURIComponent(username)}`, {
-        id: credential.id,
-        rawId: bufferToBase64Url(credential.rawId),
-        type: credential.type,
-        response: {
-          clientDataJSON: bufferToBase64Url(response.clientDataJSON),
-          attestationObject: bufferToBase64Url(response.attestationObject),
-        },
-      });
-
+      const finishRes = await axios.post(
+        `${API_URL}/auth/webauthn/register/finish?username=${encodeURIComponent(username)}`,
+        {
+          id: credential.id,
+          rawId: bufferToBase64Url(credential.rawId),
+          type: credential.type,
+          response: {
+            clientDataJSON: bufferToBase64Url(response.clientDataJSON),
+            attestationObject: bufferToBase64Url(response.attestationObject),
+          },
+        }
+      );
       setAuthToken(finishRes.data.token);
       setStatus("✅ Passkey registered and logged in!");
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.error || err.message}`);
+      setStatus(`Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -64,45 +61,38 @@ export default function Home() {
     if (!username) return setStatus("Enter an email first.");
     setLoading(true);
     setStatus("Waiting for biometrics (login)...");
-
     try {
-      // 1. Get challenge
       const beginRes = await axios.post(`${API_URL}/auth/webauthn/login/begin`, { username });
       const options = beginRes.data.publicKey;
-
-      // 2. Convert challenge and allowCredentials to ArrayBuffer
       options.challenge = base64UrlToBuffer(options.challenge);
       if (options.allowCredentials) {
         options.allowCredentials = options.allowCredentials.map((c: any) => ({
-          ...c,
-          id: base64UrlToBuffer(c.id),
+          ...c, id: base64UrlToBuffer(c.id),
         }));
       }
-
-      // 3. Trigger biometric prompt
       const credential = (await navigator.credentials.get({ publicKey: options })) as PublicKeyCredential;
       if (!credential) throw new Error("Login cancelled");
-
       const response = credential.response as AuthenticatorAssertionResponse;
 
-      // 4. Send result to backend
-      const finishRes = await axios.post(`${API_URL}/auth/webauthn/login/finish?username=${encodeURIComponent(username)}`, {
-        id: credential.id,
-        rawId: bufferToBase64Url(credential.rawId),
-        type: credential.type,
-        response: {
-          clientDataJSON: bufferToBase64Url(response.clientDataJSON),
-          authenticatorData: bufferToBase64Url(response.authenticatorData),
-          signature: bufferToBase64Url(response.signature),
-          userHandle: response.userHandle ? bufferToBase64Url(response.userHandle) : null,
-        },
-      });
-
+      const finishRes = await axios.post(
+        `${API_URL}/auth/webauthn/login/finish?username=${encodeURIComponent(username)}`,
+        {
+          id: credential.id,
+          rawId: bufferToBase64Url(credential.rawId),
+          type: credential.type,
+          response: {
+            clientDataJSON: bufferToBase64Url(response.clientDataJSON),
+            authenticatorData: bufferToBase64Url(response.authenticatorData),
+            signature: bufferToBase64Url(response.signature),
+            userHandle: response.userHandle ? bufferToBase64Url(response.userHandle) : null,
+          },
+        }
+      );
       setAuthToken(finishRes.data.token);
       setStatus("✅ Logged in successfully!");
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.error || err.message}`);
+      setStatus(`Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -110,9 +100,19 @@ export default function Home() {
 
   async function handleSwap() {
     if (!authToken) return;
+
+    const privateKey = process.env.NEXT_PUBLIC_TEST_PRIVATE_KEY;
+    if (!privateKey) {
+      setStatus("Error: NEXT_PUBLIC_TEST_PRIVATE_KEY not set in .env.local");
+      return;
+    }
+    const account = privateKeyToAccount(privateKey as `0x${string}`);
+
     setLoading(true);
     setStatus("1. Fetching quote...");
     setSwapResult(null);
+    setBroadcastStatus(null);
+    setTxHash(null);
 
     try {
       const config = { headers: { Authorization: `Bearer ${authToken}` } };
@@ -124,19 +124,64 @@ export default function Home() {
 
       setStatus("2. Building transaction...");
       const buildRes = await axios.post(`${API_URL}/v1/transactions/build`, {
-        quote_id: quote.quote_id, from_address: "0x0000000000000000000000000000000000000001",
+        quote_id: quote.quote_id,
+        from_address: account.address,
       }, config);
+      const unsignedTxJson = buildRes.data.unsigned_tx_json;
 
       setStatus("3. Simulating on Sepolia...");
       const simRes = await axios.post(`${API_URL}/v1/transactions/simulate`, {
-        unsigned_tx_json: buildRes.data.unsigned_tx_json,
+        unsigned_tx_json: unsignedTxJson,
       }, config);
 
-      setSwapResult({ quote, simulation: simRes.data });
-      setStatus("Success!");
+      setSwapResult({ quote, unsignedTxJson, simulation: simRes.data });
+      setStatus("Success! Ready to broadcast.");
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.error || err.message}`);
+      setStatus(`Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleBroadcast() {
+    if (!authToken || !swapResult) return;
+
+    const privateKey = process.env.NEXT_PUBLIC_TEST_PRIVATE_KEY;
+    if (!privateKey) {
+      setBroadcastStatus("Error: no private key in env");
+      return;
+    }
+
+    setLoading(true);
+    setBroadcastStatus("Signing transaction...");
+
+    try {
+      const account = privateKeyToAccount(privateKey as `0x${string}`);
+      const unsignedTx = JSON.parse(swapResult.unsignedTxJson);
+
+      const signedTxHex = await account.signTransaction({
+        to: unsignedTx.to,
+        value: BigInt(unsignedTx.value || "0x0"),
+        gas: BigInt(unsignedTx.gas || "0x186a0"),
+        maxFeePerGas: BigInt(unsignedTx.maxFeePerGas),
+        maxPriorityFeePerGas: BigInt(unsignedTx.maxPriorityFeePerGas),
+        nonce: Number(unsignedTx.nonce),
+        chainId: Number(unsignedTx.chainId),
+      });
+
+      setBroadcastStatus("Broadcasting to Sepolia...");
+      const res = await axios.post(
+        `${API_URL}/v1/transactions/broadcast`,
+        { signed_tx_hex: signedTxHex },
+        { headers: { Authorization: `Bearer ${authToken}` } }
+      );
+
+      setTxHash(res.data.tx_hash);
+      setBroadcastStatus(`✅ Broadcast! Status: ${res.data.status}`);
+    } catch (err: any) {
+      console.error(err);
+      setBroadcastStatus(`❌ Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -154,27 +199,18 @@ export default function Home() {
             <div className="bg-gray-800 p-4 rounded-xl">
               <label className="text-sm text-gray-400 mb-1 block">Email / Username</label>
               <input
-                type="text"
-                placeholder="you@example.com"
-                value={username}
+                type="text" placeholder="you@example.com" value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-transparent text-lg focus:outline-none"
               />
             </div>
-            
             <div className="flex gap-2">
-              <button
-                onClick={handleRegister}
-                disabled={loading}
-                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 rounded-xl font-bold transition"
-              >
+              <button onClick={handleRegister} disabled={loading}
+                className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 rounded-xl font-bold transition">
                 Register
               </button>
-              <button
-                onClick={handleLogin}
-                disabled={loading}
-                className="flex-1 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold transition"
-              >
+              <button onClick={handleLogin} disabled={loading}
+                className="flex-1 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold transition">
                 Login
               </button>
             </div>
@@ -183,33 +219,52 @@ export default function Home() {
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
               <span className="text-green-400 text-sm">● Authenticated</span>
-              <button onClick={() => setAuthToken(null)} className="text-xs text-gray-400 hover:text-white underline">
+              <button onClick={() => { setAuthToken(null); setSwapResult(null); setTxHash(null); setBroadcastStatus(null); setStatus(null); }}
+                className="text-xs text-gray-400 hover:text-white underline">
                 Log out
               </button>
             </div>
 
             <div className="bg-gray-800 p-4 rounded-xl">
               <label className="text-sm text-gray-400 mb-1 block">Amount (ETH)</label>
-              <input
-                type="number"
-                value={amount}
+              <input type="number" value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full bg-transparent text-2xl font-mono focus:outline-none"
-              />
+                className="w-full bg-transparent text-2xl font-mono focus:outline-none" />
             </div>
 
-            <button
-              onClick={handleSwap}
-              disabled={loading}
-              className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold text-lg transition"
-            >
-              {loading ? "Processing..." : "Swap ETH for USDC"}
+            <button onClick={handleSwap} disabled={loading}
+              className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold text-lg transition">
+              {loading && !broadcastStatus ? "Processing..." : "Swap ETH for USDC"}
             </button>
 
             {swapResult && (
-              <div className="mt-4 p-4 bg-black rounded-xl border border-gray-700 overflow-x-auto text-xs font-mono text-green-400">
+              <div className="mt-4 p-4 bg-black rounded-xl border border-gray-700 text-xs font-mono text-green-400">
                 <p className="mb-2">Quote: {swapResult.quote.expected_out} USDC</p>
-                <p>Simulation: {swapResult.simulation.success ? "✅ Success" : "❌ Failed"}</p>
+                <p className="mb-2">Simulation: {swapResult.simulation.success ? "✅ Success" : "❌ Failed"}</p>
+              </div>
+            )}
+
+            {swapResult && swapResult.simulation.success && !txHash && (
+              <button onClick={handleBroadcast} disabled={loading}
+                className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 rounded-xl font-bold transition">
+                {broadcastStatus?.includes("Signing") || broadcastStatus?.includes("Broadcasting")
+                  ? broadcastStatus
+                  : "🚀 Broadcast to Sepolia"}
+              </button>
+            )}
+
+            {broadcastStatus && !txHash && (
+              <p className="text-center text-sm font-mono text-purple-400">{broadcastStatus}</p>
+            )}
+
+            {txHash && (
+              <div className="mt-2 p-4 bg-black rounded-xl border border-green-700 text-xs font-mono">
+                <p className="text-green-400 mb-2">✅ Transaction broadcast!</p>
+                <a href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-blue-400 hover:underline break-all">
+                  {txHash}
+                </a>
               </div>
             )}
           </div>

@@ -69,7 +69,7 @@ async fn build_produces_deterministic_payload() {
     let intent_id = intent.intent_id;
     let quote = engine.quote(intent).await.unwrap();
 
-    let unsigned = engine.build(&quote).await.unwrap();
+    let unsigned = engine.build(&quote, "0x0000000000000000000000000000000000000001").await.unwrap();
 
     // Layout: chain_id (8) | intent_id (16) | amount_str (variable)
     assert_eq!(&unsigned[..8], &[0u8, 0, 0, 0, 0, 0, 0, 1]);
@@ -78,7 +78,7 @@ async fn build_produces_deterministic_payload() {
     assert_eq!(unsigned.len(), 25);
 
     // Rebuilding the same quote must produce identical bytes.
-    let unsigned2 = engine.build(&quote).await.unwrap();
+    let unsigned2 = engine.build(&quote, "0x0000000000000000000000000000000000000001").await.unwrap();
     assert_eq!(unsigned, unsigned2);
 }
 
@@ -90,7 +90,7 @@ async fn build_rejects_expired_quote() {
 
     quote.expires_at = chrono::Utc::now() - Duration::seconds(1);
 
-    let result = engine.build(&quote).await;
+    let result = engine.build(&quote, "0x0000000000000000000000000000000000000001").await;
     assert!(result.is_err());
 }
 
@@ -107,7 +107,7 @@ async fn simulate_returns_success() {
 #[tokio::test]
 async fn broadcast_returns_tx_hash() {
     let engine = MockTransactionEngine::new();
-    let result = engine.broadcast(Chain::Ethereum, b"signed-tx").await.unwrap();
+    let result = engine.broadcast(Chain::Ethereum, "signed-tx").await.unwrap();
 
     assert!(result.tx_hash.starts_with("0x"));
     assert_eq!(result.tx_hash.len(), 66);
@@ -117,7 +117,7 @@ async fn broadcast_returns_tx_hash() {
 #[tokio::test]
 async fn status_returns_broadcast_result() {
     let engine = MockTransactionEngine::new();
-    let broadcast = engine.broadcast(Chain::Ethereum, b"signed-tx").await.unwrap();
+    let broadcast = engine.broadcast(Chain::Ethereum, "signed-tx").await.unwrap();
 
     let status = engine.status(Chain::Ethereum, &broadcast.tx_hash).await.unwrap();
     assert_eq!(status.tx_hash, broadcast.tx_hash);

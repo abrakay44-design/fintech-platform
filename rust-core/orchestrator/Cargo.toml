@@ -6,6 +6,7 @@ license.workspace = true
 authors.workspace = true
 
 [dependencies]
+hex.workspace = true
 common = { path = "../common" }
 transaction-engine = { path = "../transaction-engine" }
 policy-engine = { path = "../policy-engine" }

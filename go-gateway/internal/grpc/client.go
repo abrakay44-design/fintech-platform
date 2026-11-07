@@ -126,3 +126,10 @@ func (c *Client) Simulate(ctx context.Context, req *pb.SimulateRequest) (*pb.Sim
 	defer cancel()
 	return c.sc.Simulate(ctx, req)
 }
+
+// BroadcastTransaction calls the BroadcastTransaction RPC.
+func (c *Client) BroadcastTransaction(ctx context.Context, req *pb.BroadcastRequest) (*pb.BroadcastResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	return c.sc.BroadcastTransaction(ctx, req)
+}

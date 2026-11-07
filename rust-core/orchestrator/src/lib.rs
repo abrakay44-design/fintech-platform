@@ -48,14 +48,15 @@ pub async fn execute_swap(
         }
     }
 
-    let unsigned = deps.tx_engine.build(&quote).await?;
+    let unsigned = deps.tx_engine.build(&quote, &req.from_address).await?;
     let signed = deps
         .wallet
         .attach_signature(&req.wallet_handle, &unsigned, &req.signature)
         .await?;
 
     let chain = quote.intent.from.chain;
-    let broadcast = deps.tx_engine.broadcast(chain, &signed.raw_bytes).await?;
+    let signed_hex = hex::encode(&signed.raw_bytes);
+    let broadcast = deps.tx_engine.broadcast(chain, &signed_hex).await?;
 
     let usd_value = estimate_usd_value(&intent);
     let record = TxRecord {

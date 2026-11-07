@@ -11,6 +11,8 @@ pub struct SwapRequest {
     pub to_account: AccountId,
     pub wallet_handle: wallet_service::PublicKeyHandle,
     pub signature: wallet_service::Signature,
+    /// EVM address of the signer (needed to build & broadcast).
+    pub from_address: String,
     pub intent: common::TxIntent,
 }
 

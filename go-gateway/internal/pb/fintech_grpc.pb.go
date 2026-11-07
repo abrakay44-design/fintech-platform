@@ -19,19 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	SwapService_Quote_FullMethodName            = "/fintech.v1.SwapService/Quote"
-	SwapService_Build_FullMethodName            = "/fintech.v1.SwapService/Build"
-	SwapService_Simulate_FullMethodName         = "/fintech.v1.SwapService/Simulate"
-	SwapService_ExecuteSwap_FullMethodName      = "/fintech.v1.SwapService/ExecuteSwap"
-	SwapService_GetSwapStatus_FullMethodName    = "/fintech.v1.SwapService/GetSwapStatus"
-	SwapService_RegisterWallet_FullMethodName   = "/fintech.v1.SwapService/RegisterWallet"
-	SwapService_GetWallet_FullMethodName        = "/fintech.v1.SwapService/GetWallet"
-	SwapService_ListWallets_FullMethodName      = "/fintech.v1.SwapService/ListWallets"
-	SwapService_VerifySignature_FullMethodName  = "/fintech.v1.SwapService/VerifySignature"
-	SwapService_GetPortfolio_FullMethodName     = "/fintech.v1.SwapService/GetPortfolio"
-	SwapService_ListTransactions_FullMethodName = "/fintech.v1.SwapService/ListTransactions"
-	SwapService_GetLimits_FullMethodName        = "/fintech.v1.SwapService/GetLimits"
-	SwapService_DailyTotal_FullMethodName       = "/fintech.v1.SwapService/DailyTotal"
+	SwapService_Quote_FullMethodName                = "/fintech.v1.SwapService/Quote"
+	SwapService_Build_FullMethodName                = "/fintech.v1.SwapService/Build"
+	SwapService_Simulate_FullMethodName             = "/fintech.v1.SwapService/Simulate"
+	SwapService_BroadcastTransaction_FullMethodName = "/fintech.v1.SwapService/BroadcastTransaction"
+	SwapService_ExecuteSwap_FullMethodName          = "/fintech.v1.SwapService/ExecuteSwap"
+	SwapService_GetSwapStatus_FullMethodName        = "/fintech.v1.SwapService/GetSwapStatus"
+	SwapService_RegisterWallet_FullMethodName       = "/fintech.v1.SwapService/RegisterWallet"
+	SwapService_GetWallet_FullMethodName            = "/fintech.v1.SwapService/GetWallet"
+	SwapService_ListWallets_FullMethodName          = "/fintech.v1.SwapService/ListWallets"
+	SwapService_VerifySignature_FullMethodName      = "/fintech.v1.SwapService/VerifySignature"
+	SwapService_GetPortfolio_FullMethodName         = "/fintech.v1.SwapService/GetPortfolio"
+	SwapService_ListTransactions_FullMethodName     = "/fintech.v1.SwapService/ListTransactions"
+	SwapService_GetLimits_FullMethodName            = "/fintech.v1.SwapService/GetLimits"
+	SwapService_DailyTotal_FullMethodName           = "/fintech.v1.SwapService/DailyTotal"
 )
 
 // SwapServiceClient is the client API for SwapService service.
@@ -42,6 +43,7 @@ type SwapServiceClient interface {
 	Quote(ctx context.Context, in *QuoteRequest, opts ...grpc.CallOption) (*QuoteResponse, error)
 	Build(ctx context.Context, in *BuildRequest, opts ...grpc.CallOption) (*BuildResponse, error)
 	Simulate(ctx context.Context, in *SimulateRequest, opts ...grpc.CallOption) (*SimulateResponse, error)
+	BroadcastTransaction(ctx context.Context, in *BroadcastRequest, opts ...grpc.CallOption) (*BroadcastResponse, error)
 	ExecuteSwap(ctx context.Context, in *ExecuteSwapRequest, opts ...grpc.CallOption) (*ExecuteSwapResponse, error)
 	GetSwapStatus(ctx context.Context, in *StatusRequest, opts ...grpc.CallOption) (*StatusResponse, error)
 	// --- Wallet ---
@@ -89,6 +91,16 @@ func (c *swapServiceClient) Simulate(ctx context.Context, in *SimulateRequest, o
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SimulateResponse)
 	err := c.cc.Invoke(ctx, SwapService_Simulate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *swapServiceClient) BroadcastTransaction(ctx context.Context, in *BroadcastRequest, opts ...grpc.CallOption) (*BroadcastResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(BroadcastResponse)
+	err := c.cc.Invoke(ctx, SwapService_BroadcastTransaction_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -203,6 +215,7 @@ type SwapServiceServer interface {
 	Quote(context.Context, *QuoteRequest) (*QuoteResponse, error)
 	Build(context.Context, *BuildRequest) (*BuildResponse, error)
 	Simulate(context.Context, *SimulateRequest) (*SimulateResponse, error)
+	BroadcastTransaction(context.Context, *BroadcastRequest) (*BroadcastResponse, error)
 	ExecuteSwap(context.Context, *ExecuteSwapRequest) (*ExecuteSwapResponse, error)
 	GetSwapStatus(context.Context, *StatusRequest) (*StatusResponse, error)
 	// --- Wallet ---
@@ -234,6 +247,9 @@ func (UnimplementedSwapServiceServer) Build(context.Context, *BuildRequest) (*Bu
 }
 func (UnimplementedSwapServiceServer) Simulate(context.Context, *SimulateRequest) (*SimulateResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Simulate not implemented")
+}
+func (UnimplementedSwapServiceServer) BroadcastTransaction(context.Context, *BroadcastRequest) (*BroadcastResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method BroadcastTransaction not implemented")
 }
 func (UnimplementedSwapServiceServer) ExecuteSwap(context.Context, *ExecuteSwapRequest) (*ExecuteSwapResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ExecuteSwap not implemented")
@@ -336,6 +352,24 @@ func _SwapService_Simulate_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SwapServiceServer).Simulate(ctx, req.(*SimulateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SwapService_BroadcastTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BroadcastRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SwapServiceServer).BroadcastTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: SwapService_BroadcastTransaction_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SwapServiceServer).BroadcastTransaction(ctx, req.(*BroadcastRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -538,6 +572,10 @@ var SwapService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Simulate",
 			Handler:    _SwapService_Simulate_Handler,
+		},
+		{
+			MethodName: "BroadcastTransaction",
+			Handler:    _SwapService_BroadcastTransaction_Handler,
 		},
 		{
 			MethodName: "ExecuteSwap",

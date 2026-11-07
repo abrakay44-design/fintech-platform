@@ -228,3 +228,45 @@ func (h *Handlers) Simulate(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, resp)
 }
+
+
+// ── Broadcast ────────────────────────────────────────────────────────────
+
+type broadcastReq struct {
+	SignedTxHex string `json:"signed_tx_hex"`
+}
+
+type broadcastResp struct {
+	TxHash string `json:"tx_hash"`
+	Status string `json:"status"`
+}
+
+func (h *Handlers) BroadcastTransaction(w http.ResponseWriter, r *http.Request) {
+	userID, ok := r.Context().Value(auth.UserIDKey).(string)
+	if !ok {
+		writeError(w, h.Logger, http.StatusUnauthorized, "unauthorized", "missing user context")
+		return
+	}
+	_ = userID
+
+	var body broadcastReq
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil || body.SignedTxHex == "" {
+		writeError(w, h.Logger, http.StatusBadRequest, "invalid_request", "signed_tx_hex required")
+		return
+	}
+
+	resp, err := h.GRPC.BroadcastTransaction(r.Context(), &pb.BroadcastRequest{
+		Chain:       "ethereum",
+		SignedTxHex: body.SignedTxHex,
+	})
+	if err != nil {
+		hs, code := grpcToHTTP(err)
+		writeError(w, h.Logger, hs, code, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, broadcastResp{
+		TxHash: resp.TxHash,
+		Status: resp.Status,
+	})
+}

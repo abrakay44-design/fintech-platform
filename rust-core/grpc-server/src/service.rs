@@ -165,7 +165,7 @@ impl SwapService for SwapServiceImpl {
             .ok_or_else(|| Status::not_found(format!("Quote {} not found", req.quote_id)))?;
 
         // 2. Call the engine's build method
-        let unsigned_tx = self.deps.tx_engine.build(quote).await.map_err(status_internal)?;
+        let unsigned_tx = self.deps.tx_engine.build(quote, &req.from_address).await.map_err(status_internal)?;
 
         // 3. Return the JSON string
         Ok(Response::new(BuildResponse {
@@ -190,6 +190,24 @@ impl SwapService for SwapServiceImpl {
             success: result.success,
             revert_reason: result.revert_reason.unwrap_or_default(),
             gas_used: result.gas_used,
+        }))
+    }
+
+    async fn broadcast_transaction(
+        &self,
+        request: Request<BroadcastRequest>,
+    ) -> Result<Response<BroadcastResponse>, Status> {
+        let req = request.into_inner();
+        let chain = common::Chain::Ethereum;
+        let result = self
+            .deps
+            .tx_engine
+            .broadcast(chain, &req.signed_tx_hex)
+            .await
+            .map_err(status_internal)?;
+        Ok(Response::new(BroadcastResponse {
+            tx_hash: result.tx_hash,
+            status: format!("{:?}", result.status),
         }))
     }
 
@@ -228,6 +246,7 @@ impl SwapService for SwapServiceImpl {
             to_account,
             wallet_handle,
             signature: wallet_service::Signature(r.signature),
+            from_address: "0x0000000000000000000000000000000000000001".into(),
             intent,
         };
 
