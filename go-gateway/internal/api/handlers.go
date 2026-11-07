@@ -6,14 +6,19 @@ import (
 	"net/http"
 
 	grpcclient "github.com/sirabra/fintech-gateway/internal/grpc"
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/sirabra/fintech-gateway/internal/auth"
 	"github.com/sirabra/fintech-gateway/internal/pb"
 )
 
 // Handlers holds dependencies for all HTTP handlers.
 type Handlers struct {
-	GRPC   *grpcclient.Client
-	Logger *slog.Logger
+	GRPC     *grpcclient.Client
+	Logger   *slog.Logger
+	DB       *pgxpool.Pool
+	WebAuthn *webauthn.WebAuthn
+	Sessions *auth.SessionStore
 }
 
 // ── Health ───────────────────────────────────────────────────────────────

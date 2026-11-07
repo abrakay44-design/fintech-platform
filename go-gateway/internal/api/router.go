@@ -8,33 +8,40 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	grpcclient "github.com/sirabra/fintech-gateway/internal/grpc"
+	"github.com/go-webauthn/webauthn/webauthn"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirabra/fintech-gateway/internal/auth"
+	grpcclient "github.com/sirabra/fintech-gateway/internal/grpc"
 )
 
-// NewRouter builds the chi router with all REST endpoints wired to the
-// gRPC client.
-func NewRouter(gc *grpcclient.Client, logger *slog.Logger) http.Handler {
-	h := &Handlers{GRPC: gc, Logger: logger}
+func NewRouter(gc *grpcclient.Client, logger *slog.Logger, db *pgxpool.Pool, wa *webauthn.WebAuthn) http.Handler {
+	h := &Handlers{
+		GRPC:     gc,
+		Logger:   logger,
+		DB:       db,
+		WebAuthn: wa,
+		Sessions: auth.NewSessionStore(),
+	}
 
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
-
-	// Add CORS middleware to allow the Next.js frontend to communicate
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://127.0.0.1:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
 
 	r.Get("/healthz", h.Healthz)
 	r.Post("/auth/login", h.Login)
+	r.Post("/auth/webauthn/register/begin", h.WARegisterBegin)
+	r.Post("/auth/webauthn/register/finish", h.WARegisterFinish)
+	r.Post("/auth/webauthn/login/begin", h.WALoginBegin)
+	r.Post("/auth/webauthn/login/finish", h.WALoginFinish)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.RequireAuth)
@@ -45,21 +52,17 @@ func NewRouter(gc *grpcclient.Client, logger *slog.Logger) http.Handler {
 			r.Post("/execute", h.ExecuteSwap)
 			r.Get("/status", h.SwapStatus)
 		})
-
 		r.Route("/wallet", func(r chi.Router) {
 			r.Get("/{handle}", h.GetWallet)
 			r.Get("/", h.ListWallets)
 		})
-
 		r.Route("/portfolio", func(r chi.Router) {
 			r.Get("/", h.GetPortfolio)
 		})
-
 		r.Route("/policy", func(r chi.Router) {
 			r.Get("/limits", h.GetLimits)
 			r.Get("/daily-total", h.DailyTotal)
 		})
 	})
-
 	return r
 }
