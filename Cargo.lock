@@ -3132,6 +3132,7 @@ dependencies = [
  "async-trait",
  "chrono",
  "common",
+ "hex",
  "k256",
  "ledger",
  "policy-engine",

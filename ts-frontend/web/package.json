@@ -3,11 +3,37 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "echo 'next dev (not yet configured)'",
-    "build": "echo 'build (not yet configured)'",
-    "typecheck": "tsc --noEmit"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@metamask/connect-evm": "^2.1.1",
+    "@tanstack/react-query": "^5.0.0",
+    "@x402/evm": "^2.29.0",
+    "@x402/svm": "^2.29.0",
+    "axios": "^1.6.0",
+    "lucide-react": "^0.300.0",
+    "next": "14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "viem": "^2.0.0",
+    "wagmi": "^2.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.5.4"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.0",
+    "pino-pretty": "^13.2.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.5.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@coinbase/cdp-sdk": "1.52.0"
+    }
   }
 }
