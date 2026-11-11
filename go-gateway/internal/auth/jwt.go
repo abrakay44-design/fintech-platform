@@ -3,10 +3,18 @@ package auth
 import (
 	"time"
 	"github.com/golang-jwt/jwt/v5"
+	"os"
 )
 
+func envOr(k, d string) string {
+    if v := os.Getenv(k); v != "" {
+        return v
+    }
+    return d
+}
+
 // In production, this MUST be an environment variable (e.g., 32+ random bytes).
-var jwtSecret = []byte("super-secret-development-key-change-me")
+var jwtSecret = []byte(envOr("JWT_SECRET","super-secret-development-key-change-me"))
 
 type Claims struct {
 	UserID string `json:"user_id"`
