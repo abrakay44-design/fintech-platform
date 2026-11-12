@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { privateKeyToAccount } from "viem/accounts";
+import { useAccount, useConnect, useDisconnect, useWalletClient } from "wagmi";
+import { injected } from "wagmi/connectors";
 import { bufferToBase64Url, base64UrlToBuffer } from "@/lib/webauthn";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
@@ -18,6 +19,11 @@ export default function Home() {
   const [swapResult, setSwapResult] = useState<any>(null);
   const [broadcastStatus, setBroadcastStatus] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+
+  const { address, isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { data: walletClient } = useWalletClient();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -48,10 +54,10 @@ export default function Home() {
         }
       );
       setAuthToken(finishRes.data.token);
-      setStatus("✅ Passkey registered and logged in!");
+      setStatus("Passkey registered and logged in!");
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
+      setStatus(`Error: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -89,10 +95,10 @@ export default function Home() {
         }
       );
       setAuthToken(finishRes.data.token);
-      setStatus("✅ Logged in successfully!");
+      setStatus("Logged in successfully!");
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
+      setStatus(`Error: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }
@@ -100,13 +106,10 @@ export default function Home() {
 
   async function handleSwap() {
     if (!authToken) return;
-
-    const privateKey = process.env.NEXT_PUBLIC_TEST_PRIVATE_KEY;
-    if (!privateKey) {
-      setStatus("Error: NEXT_PUBLIC_TEST_PRIVATE_KEY not set in .env.local");
+    if (!isConnected || !address) {
+      setStatus("Please connect your MetaMask wallet first.");
       return;
     }
-    const account = privateKeyToAccount(privateKey as `0x${string}`);
 
     setLoading(true);
     setStatus("1. Fetching quote...");
@@ -125,7 +128,7 @@ export default function Home() {
       setStatus("2. Building transaction...");
       const buildRes = await axios.post(`${API_URL}/v1/transactions/build`, {
         quote_id: quote.quote_id,
-        from_address: account.address,
+        from_address: address,
       }, config);
       const unsignedTxJson = buildRes.data.unsigned_tx_json;
 
@@ -135,32 +138,35 @@ export default function Home() {
       }, config);
 
       setSwapResult({ quote, unsignedTxJson, simulation: simRes.data });
-      setStatus("Success! Ready to broadcast.");
+      if (simRes.data.success) {
+        setStatus("Success! Ready to broadcast.");
+      } else {
+        setStatus(`Simulation failed: ${simRes.data.revert_reason || "unknown reason"}`);
+      }
     } catch (err: any) {
       console.error(err);
-      setStatus(`Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
+      setStatus(`Error: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }
   }
 
   async function handleBroadcast() {
-    if (!authToken || !swapResult) return;
-
-    const privateKey = process.env.NEXT_PUBLIC_TEST_PRIVATE_KEY;
-    if (!privateKey) {
-      setBroadcastStatus("Error: no private key in env");
+    if (!authToken || !swapResult || !isConnected) return;
+    if (!walletClient) {
+      setBroadcastStatus("Wallet client not ready. Try reconnecting.");
       return;
     }
 
     setLoading(true);
-    setBroadcastStatus("Signing transaction...");
+    setBroadcastStatus("Requesting signature from wallet...");
 
     try {
-      const account = privateKeyToAccount(privateKey as `0x${string}`);
       const unsignedTx = JSON.parse(swapResult.unsignedTxJson);
 
-      const signedTxHex = await account.signTransaction({
+      // MetaMask does not support eth_signTransaction.
+      // Use sendTransaction instead: wallet signs AND broadcasts in one step.
+      const hash = await walletClient.sendTransaction({
         to: unsignedTx.to,
         value: BigInt(unsignedTx.value || "0x0"),
         gas: BigInt(unsignedTx.gas || "0x186a0"),
@@ -170,18 +176,11 @@ export default function Home() {
         chainId: Number(unsignedTx.chainId),
       });
 
-      setBroadcastStatus("Broadcasting to Sepolia...");
-      const res = await axios.post(
-        `${API_URL}/v1/transactions/broadcast`,
-        { signed_tx_hex: signedTxHex },
-        { headers: { Authorization: `Bearer ${authToken}` } }
-      );
-
-      setTxHash(res.data.tx_hash);
-      setBroadcastStatus(`✅ Broadcast! Status: ${res.data.status}`);
+      setTxHash(hash);
+      setBroadcastStatus("Broadcast! Waiting for confirmation...");
     } catch (err: any) {
       console.error(err);
-      setBroadcastStatus(`❌ Error: ${err.response?.data?.message || err.response?.data?.error || err.message}`);
+      setBroadcastStatus(`Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -207,7 +206,7 @@ export default function Home() {
             <div className="flex gap-2">
               <button onClick={handleRegister} disabled={loading}
                 className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 rounded-xl font-bold transition">
-                Register
+                Register Passkey
               </button>
               <button onClick={handleLogin} disabled={loading}
                 className="flex-1 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold transition">
@@ -218,12 +217,30 @@ export default function Home() {
         ) : (
           <div className="space-y-4">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-green-400 text-sm">● Authenticated</span>
+              <span className="text-green-400 text-sm">Authenticated</span>
               <button onClick={() => { setAuthToken(null); setSwapResult(null); setTxHash(null); setBroadcastStatus(null); setStatus(null); }}
                 className="text-xs text-gray-400 hover:text-white underline">
                 Log out
               </button>
             </div>
+
+            {!isConnected ? (
+              <button
+                onClick={() => connect({ connector: connectors[0] })}
+                className="w-full py-3 bg-orange-600 hover:bg-orange-700 rounded-xl font-bold transition"
+              >
+                Connect MetaMask Wallet
+              </button>
+            ) : (
+              <div className="flex justify-between items-center bg-gray-800 p-3 rounded-xl">
+                <span className="text-sm text-gray-300 font-mono">
+                  {address?.slice(0, 6)}...{address?.slice(-4)}
+                </span>
+                <button onClick={() => disconnect()} className="text-xs text-red-400 hover:text-red-300 underline">
+                  Disconnect
+                </button>
+              </div>
+            )}
 
             <div className="bg-gray-800 p-4 rounded-xl">
               <label className="text-sm text-gray-400 mb-1 block">Amount (ETH)</label>
@@ -232,24 +249,24 @@ export default function Home() {
                 className="w-full bg-transparent text-2xl font-mono focus:outline-none" />
             </div>
 
-            <button onClick={handleSwap} disabled={loading}
+            <button onClick={handleSwap} disabled={loading || !isConnected}
               className="w-full py-4 bg-green-600 hover:bg-green-700 disabled:bg-gray-700 rounded-xl font-bold text-lg transition">
-              {loading && !broadcastStatus ? "Processing..." : "Swap ETH for USDC"}
+              {loading && !broadcastStatus ? "Processing..." : !isConnected ? "Connect Wallet First" : "Swap ETH for USDC"}
             </button>
 
             {swapResult && (
               <div className="mt-4 p-4 bg-black rounded-xl border border-gray-700 text-xs font-mono text-green-400">
                 <p className="mb-2">Quote: {swapResult.quote.expected_out} USDC</p>
-                <p className="mb-2">Simulation: {swapResult.simulation.success ? "✅ Success" : "❌ Failed"}</p>
+                <p className="mb-2">Simulation: {swapResult.simulation.success ? "Success" : "Failed"}</p>
               </div>
             )}
 
             {swapResult && swapResult.simulation.success && !txHash && (
               <button onClick={handleBroadcast} disabled={loading}
                 className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 rounded-xl font-bold transition">
-                {broadcastStatus?.includes("Signing") || broadcastStatus?.includes("Broadcasting")
+                {broadcastStatus?.includes("signature") || broadcastStatus?.includes("Broadcasting")
                   ? broadcastStatus
-                  : "🚀 Broadcast to Sepolia"}
+                  : "Sign & Broadcast"}
               </button>
             )}
 
@@ -259,7 +276,7 @@ export default function Home() {
 
             {txHash && (
               <div className="mt-2 p-4 bg-black rounded-xl border border-green-700 text-xs font-mono">
-                <p className="text-green-400 mb-2">✅ Transaction broadcast!</p>
+                <p className="text-green-400 mb-2">Transaction broadcast!</p>
                 <a href={`https://sepolia.etherscan.io/tx/${txHash}`}
                   target="_blank" rel="noopener noreferrer"
                   className="text-blue-400 hover:underline break-all">
