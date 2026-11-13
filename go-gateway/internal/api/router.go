@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httprate"
 	"github.com/go-chi/cors"
 	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -28,6 +29,7 @@ func NewRouter(gc *grpcclient.Client, logger *slog.Logger, db *pgxpool.Pool, wa 
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
+	r.Use(httprate.LimitByIP(60, 1*time.Minute))
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000", "http://127.0.0.1:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -46,6 +48,8 @@ func NewRouter(gc *grpcclient.Client, logger *slog.Logger, db *pgxpool.Pool, wa 
 	r.Route("/v1", func(r chi.Router) {
 		r.Use(auth.RequireAuth)
 		r.Route("/transactions", func(r chi.Router) {
+			// Strict limit: 5 requests per minute for expensive chain operations
+			r.Use(httprate.LimitByIP(5, 1*time.Minute))
 			r.Post("/quote", h.Quote)
 			r.Post("/build", h.Build)
 			r.Post("/simulate", h.Simulate)
